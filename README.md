@@ -89,6 +89,7 @@ __Use case 4.__ Authenticating a user and establishing a user session with the A
 import 'package:amazon_cognito_identity_dart/cognito_user.dart';
 import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
 import 'package:amazon_cognito_identity_dart/cognito_user_session.dart';
+import 'package:amazon_cognito_identity_dart/cognito_user_exceptions.dart';
 
 final userPool = new CognitoUserPool(
   'ap-southeast-1_xxxxxxxxx',
