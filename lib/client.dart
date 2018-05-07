@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ClientException implements Exception {
@@ -45,12 +44,13 @@ class Client {
         headers: headers,
         body: body,
       );
-    } on SocketException catch (e) {
-      throw new ClientException(
-        e.message,
-        code: 'NetworkError',
-      );
     } catch (e) {
+      if (e.toString().startsWith('SocketException:')) {
+        throw new ClientException(
+          e.message,
+          code: 'NetworkError',
+        );
+      }
       throw new ClientException('Unknown Error', code: 'Unknown error');
     }
 
