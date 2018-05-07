@@ -40,7 +40,7 @@ class CognitoUser {
   CognitoUserPool pool;
   Client client;
   String authenticationFlowType;
-  MemoryStorage storage;
+  Storage storage;
   CognitoUserSession _signInUserSession;
 
   CognitoUser(
@@ -54,7 +54,7 @@ class CognitoUser {
     authenticationFlowType = 'USER_SRP_AUTH';
 
     if (this.storage == null) {
-      this.storage = (new StorageHelper()).getStorage();
+      this.storage = (new StorageHelper(new MemoryStorage())).getStorage();
     }
   }
 
