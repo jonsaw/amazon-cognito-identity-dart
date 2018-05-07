@@ -9,30 +9,30 @@ void main() {
       final s = new StorageHelper(new MemoryStorage());
       expect(s.getStorage(), new isInstanceOf<MemoryStorage>());
     });
-    test('.getItem() returns default null', () {
+    test('.getItem() returns default null', () async {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
-      expect(s.getItem('some'), equals(null));
+      expect(await s.getItem('some'), equals(null));
     });
-    test('.setItem() sets up item in memory & .getItem() retrieves item', () {
+    test('.setItem() sets up item in memory & .getItem() retrieves item', () async {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
       s.setItem('some', 'value');
-      expect(s.getItem('some'), equals('value'));
+      expect(await s.getItem('some'), equals('value'));
     });
-    test('.getItem() retrieves item from previous storage', () {
+    test('.getItem() retrieves item from previous storage', () async {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
-      expect(s.getItem('some'), equals('value'));
+      expect(await s.getItem('some'), equals('value'));
     });
-    test('.removeItem() returns item and removes from storage', () {
+    test('.removeItem() returns item and removes from storage', () async {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
-      s.setItem('another', 'awesome value');
-      final removedItem = s.removeItem('another');
+      await s.setItem('another', 'awesome value');
+      final removedItem = await s.removeItem('another');
       expect(removedItem, equals('awesome value'));
-      expect(s.getItem('another'), equals(null));
+      expect(await s.getItem('another'), equals(null));
     });
-    test('.clear() clears storage', () {
+    test('.clear() clears storage', () async {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
       s.clear();
-      expect(s.getItem('some'), equals(null));
+      expect(await s.getItem('some'), equals(null));
     });
   });
   group('custom storage', () {
@@ -40,19 +40,19 @@ void main() {
       final s = new StorageHelper(new TestCustomStorage('test:'));
       expect(s.getStorage(), new isInstanceOf<TestCustomStorage>());
     });
-    test('.setItem() sets up json value with custom prefixed key', () {
+    test('.setItem() sets up json value with custom prefixed key', () async {
       final s = new StorageHelper(new TestCustomStorage('test:')).getStorage();
       final Map<String, String> params = {
         'username': 'x123',
         'name': 'Michael',
       };
-      s.setItem('user', params);
+      await s.setItem('user', params);
       expect(testStorage['test:user'],
         equals('{"username":"x123","name":"Michael"}'));
     });
-    test('.getItem() gets item with decoded values', () {
+    test('.getItem() gets item with decoded values', () async {
       final s = new StorageHelper(new TestCustomStorage('test:')).getStorage();
-      final user = s.getItem('user');
+      final user = await s.getItem('user');
       expect(user['username'], equals('x123'));
       expect(user['name'], equals('Michael'));
     });

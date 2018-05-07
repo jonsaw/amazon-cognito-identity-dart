@@ -56,8 +56,6 @@ try {
 } catch (e) {
   print(e);
 }
-
-
 print(result);
 ```
 
@@ -129,7 +127,7 @@ print(session.getAccessToken().getJwtToken());
 __Use case 14.__ Signing out from the application.
 
 ```dart
-cognitoUser.signOut();
+await cognitoUser.signOut();
 ```
 __Use case 15.__ Global signout for authenticated users (invalidates all issued tokens).
 

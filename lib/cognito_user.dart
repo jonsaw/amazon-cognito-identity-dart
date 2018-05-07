@@ -102,7 +102,7 @@ class CognitoUser {
       return _signInUserSession;
     }
     _signInUserSession = this.getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
-    this.cacheTokens();
+    await this.cacheTokens();
 
     final newDeviceMetadata = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata'];
     if (newDeviceMetadata == null) {
@@ -135,7 +135,7 @@ class CognitoUser {
     final dataConfirm = client.request('ConfirmDevice', paramsConfirmDevice);
 
     _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey'];
-    cacheDeviceKeyAndPassword();
+    await cacheDeviceKeyAndPassword();
 
     if (dataConfirm['UserConfirmationNecessary'] == true) {
       throw new CognitoUserConfirmationNecessaryException(
@@ -164,11 +164,11 @@ class CognitoUser {
     final refreshTokenKey = '${keyPrefix}.refreshToken';
     final clockDriftKey = '${keyPrefix}.clockDrift';
 
-    if (storage.getItem(idTokenKey) != null) {
-      final idToken = new CognitoIdToken(storage.getItem(idTokenKey));
-      final accessToken = new CognitoAccessToken(storage.getItem(accessTokenKey));
-      final refreshToken = new CognitoRefreshToken(storage.getItem(refreshTokenKey));
-      final clockDrift = int.parse(storage.getItem(clockDriftKey)) ?? 0;
+    if (await storage.getItem(idTokenKey) != null) {
+      final idToken = new CognitoIdToken(await storage.getItem(idTokenKey));
+      final accessToken = new CognitoAccessToken(await storage.getItem(accessTokenKey));
+      final refreshToken = new CognitoRefreshToken(await storage.getItem(refreshTokenKey));
+      final clockDrift = int.parse(await storage.getItem(clockDriftKey)) ?? 0;
 
       final cachedSession = new CognitoUserSession(
         idToken,
@@ -201,10 +201,10 @@ class CognitoUser {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}';
     final lastUserKey = '${keyPrefix}.LastAuthUser';
 
-    if (storage.getItem(lastUserKey) != null) {
-      this.username = storage.getItem(lastUserKey);
+    if (await storage.getItem(lastUserKey) != null) {
+      this.username = await storage.getItem(lastUserKey);
       final deviceKeyKey = '${keyPrefix}.${this.username}.deviceKey';
-      _deviceKey = this.storage.getItem(deviceKeyKey);
+      _deviceKey = await this.storage.getItem(deviceKeyKey);
       authParameters['DEVICE_KEY'] = _deviceKey;
     }
 
@@ -222,7 +222,7 @@ class CognitoUser {
       authResult = await client.request('InitiateAuth', paramsReq);
     } on ClientException catch (e) {
       if (e.code == 'NotAuthorizedException') {
-        clearCachedTokens();
+        await clearCachedTokens();
       }
       throw e;
     }
@@ -233,7 +233,7 @@ class CognitoUser {
         authenticationResult['RefreshToken'] = refreshToken.getToken();
       }
       _signInUserSession = this.getCognitoUserSession(authenticationResult);
-      this.cacheTokens();
+      await this.cacheTokens();
       return _signInUserSession;
     }
     return null;
@@ -258,16 +258,16 @@ class CognitoUser {
     this.authenticationFlowType = authenticationFlowType;
   }
 
-  getCachedDeviceKeyAndPassword() {
+  getCachedDeviceKeyAndPassword() async {
     final String keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final String deviceKeyKey = '${keyPrefix}.deviceKey';
     final String randomPasswordKey = '${keyPrefix}.randomPasswordKey';
     final String deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
 
-    if (storage.getItem(deviceKeyKey) != null) {
-      _deviceKey = storage.getItem(deviceKeyKey);
-      _deviceGroupKey = storage.getItem(deviceGroupKeyKey);
-      _randomPassword = storage.getItem(randomPasswordKey);
+    if (await storage.getItem(deviceKeyKey) != null) {
+      _deviceKey = await storage.getItem(deviceKeyKey);
+      _deviceGroupKey = await storage.getItem(deviceGroupKeyKey);
+      _randomPassword = await storage.getItem(randomPasswordKey);
     }
   }
   /**
@@ -358,7 +358,7 @@ class CognitoUser {
     final dataAuthenticate = await client.request('RespondToAuthChallenge', paramsResp);
 
     _signInUserSession = this.getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
-    this.cacheTokens();
+    await this.cacheTokens();
     return _signInUserSession;
   }
 
@@ -396,7 +396,7 @@ class CognitoUser {
     }
 
     _signInUserSession = getCognitoUserSession(data['AuthenticationResult']);
-    cacheTokens();
+    await cacheTokens();
 
     return _signInUserSession;
   }
@@ -416,9 +416,9 @@ class CognitoUser {
   /**
    * This is used for the user to signOut of the application and clear the cached tokens.
    */
-  void signOut() {
+  void signOut() async {
     _signInUserSession = null;
-    clearCachedTokens();
+    await clearCachedTokens();
   }
 
   /**
@@ -432,7 +432,7 @@ class CognitoUser {
       'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
     };
     await client.request('GlobalSignOut', paramsReq);
-    clearCachedTokens();
+    await clearCachedTokens();
   }
 
 
@@ -555,7 +555,7 @@ class CognitoUser {
           _deviceKey = null;
           _randomPassword = null;
           _deviceGroupKey = null;
-          clearCachedDeviceKeyAndPassword();
+          await clearCachedDeviceKeyAndPassword();
           return await respondToAuthChallenge(challenge);
         }
         throw e;
@@ -712,7 +712,7 @@ class CognitoUser {
     }
 
     _signInUserSession = getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
-    cacheTokens();
+    await cacheTokens();
 
     if (dataAuthenticate['AuthenticationResult']['NewDeviceMetadata'] == null) {
       return _signInUserSession;
@@ -745,7 +745,7 @@ class CognitoUser {
     };
     final dataConfirm = await client.request('ConfirmDevice', confirmDeviceParamsReq);
     _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey'];
-    cacheDeviceKeyAndPassword();
+    await cacheDeviceKeyAndPassword();
     if (dataConfirm['UserConfirmationNecessary'] == true) {
       throw new CognitoUserConfirmationNecessaryException(
         'UserConfirmationNecessary', _signInUserSession
@@ -776,7 +776,7 @@ class CognitoUser {
   /**
    * This is used to save the session tokens to local storage
    */
-  void cacheTokens() {
+  void cacheTokens() async {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}';
     final idTokenKey = '${keyPrefix}.${username}.idToken';
     final accessTokenKey = '${keyPrefix}.${username}.accessToken';
@@ -784,54 +784,62 @@ class CognitoUser {
     final clockDriftKey = '${keyPrefix}.${username}.clockDrift';
     final lastUserKey = '${keyPrefix}.LastAuthUser';
 
-    storage.setItem(idTokenKey, _signInUserSession.getIdToken().getJwtToken());
-    storage.setItem(accessTokenKey, _signInUserSession.getAccessToken().getJwtToken());
-    storage.setItem(refreshTokenKey, _signInUserSession.getRefreshToken().getToken());
-    storage.setItem(clockDriftKey, '${_signInUserSession.getClockDrift()}');
-    storage.setItem(lastUserKey, username);
+    await Future.wait([
+      storage.setItem(idTokenKey, _signInUserSession.getIdToken().getJwtToken()),
+      storage.setItem(accessTokenKey, _signInUserSession.getAccessToken().getJwtToken()),
+      storage.setItem(refreshTokenKey, _signInUserSession.getRefreshToken().getToken()),
+      storage.setItem(clockDriftKey, '${_signInUserSession.getClockDrift()}'),
+      storage.setItem(lastUserKey, username),
+    ]);
   }
 
   /**
    * This is used to clear the session tokens from local storage
    */
-  void clearCachedTokens() {
+  void clearCachedTokens() async {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}';
     final idTokenKey = '${keyPrefix}.${this.username}.idToken';
     final accessTokenKey = '${keyPrefix}.${this.username}.accessToken';
     final refreshTokenKey = '${keyPrefix}.${this.username}.refreshToken';
     final lastUserKey = '${keyPrefix}.LastAuthUser';
 
-    this.storage.removeItem(idTokenKey);
-    this.storage.removeItem(accessTokenKey);
-    this.storage.removeItem(refreshTokenKey);
-    this.storage.removeItem(lastUserKey);
+    await Future.wait([
+      storage.removeItem(idTokenKey),
+      storage.removeItem(accessTokenKey),
+      storage.removeItem(refreshTokenKey),
+      storage.removeItem(lastUserKey),
+    ]);
   }
 
   /**
    * This is used to cache the device key and device group and device password
    */
-  void cacheDeviceKeyAndPassword() {
+  void cacheDeviceKeyAndPassword() async {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final deviceKeyKey = '${keyPrefix}.deviceKey';
     final randomPasswordKey = '${keyPrefix}.randomPasswordKey';
     final deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
 
-    this.storage.setItem(deviceKeyKey, this._deviceKey);
-    this.storage.setItem(randomPasswordKey, this._randomPassword);
-    this.storage.setItem(deviceGroupKeyKey, this._deviceGroupKey);
+    await Future.wait([
+      storage.setItem(deviceKeyKey, _deviceKey),
+      storage.setItem(randomPasswordKey, _randomPassword),
+      storage.setItem(deviceGroupKeyKey, _deviceGroupKey),
+    ]);
   }
 
   /**
    * This is used to clear the device key info from local storage
    */
-  void clearCachedDeviceKeyAndPassword() {
+  void clearCachedDeviceKeyAndPassword() async {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final deviceKeyKey = '${keyPrefix}.deviceKey';
     final randomPasswordKey = '${keyPrefix}.randomPasswordKey';
     final deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
 
-    storage.removeItem(deviceKeyKey);
-    storage.removeItem(randomPasswordKey);
-    storage.removeItem(deviceGroupKeyKey);
+    await Future.wait([
+      storage.removeItem(deviceKeyKey),
+      storage.removeItem(randomPasswordKey),
+      storage.removeItem(deviceGroupKeyKey),
+    ]);
   }
 }

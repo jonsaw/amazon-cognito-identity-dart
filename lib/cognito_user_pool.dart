@@ -47,10 +47,10 @@ class CognitoUserPool {
     return this.clientId;
   }
 
-  CognitoUser getCurrentUser() {
+  Future<CognitoUser> getCurrentUser() async {
     final lastUserKey = 'CognitoIdentityServiceProvider.${this.clientId}.LastAuthUser';
 
-    final lastAuthUser = storage.getItem(lastUserKey);
+    final lastAuthUser = await storage.getItem(lastUserKey);
     if (lastAuthUser != null) {
       return new CognitoUser(
         lastAuthUser,
