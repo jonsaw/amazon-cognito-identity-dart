@@ -134,3 +134,62 @@ __Use case 15.__ Global signout for authenticated users (invalidates all issued 
 ```dart
 await cognitoUser.globalSignOut();
 ```
+
+## Custom Storage
+```dart
+import 'dart:convert';
+import 'package:amazon_cognito_identity_dart/storage_helper.dart';
+import 'package:amazon_cognito_identity_dart/cognito_user.dart';
+import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
+import 'package:amazon_cognito_identity_dart/authentication_details.dart';
+
+Map<String, String> _storage = {};
+
+class CustomStorage extends Storage {
+  String prefix;
+  CustomStorage(this.prefix);
+  // Write do storage file/DB
+  setItem(String key, value) async {
+    _storage[prefix+key] = json.encode(value);
+    return _storage[prefix+key];
+  }
+  // Read from storage file/DB
+  getItem(String key) async {
+    if (_storage[prefix+key] != null) {
+      return json.decode(_storage[prefix+key]);
+    }
+    return null;
+  }
+  // Remove from storage file/DB
+  removeItem(String key) async {
+    return _storage.remove(prefix+key);
+  }
+  // Clear completely
+  clear() async {
+    _storage = {};
+  }
+}
+
+final customStore = new CustomStorage('custom:');
+
+final pool = new CognitoUserPool(
+  'ap-southeast-1_xxxxxxxxx',
+  'xxxxxxxxxxxxxxxxxxxxxxxxxx'
+  storage: customStore,
+);
+final cognitoUser = new CognitoUser(
+  'email@inspire.my',
+  pool,
+  storage: customStore,
+);
+final authDetails = new AuthenticationDetails(
+  username: 'email@inspire.my',
+  password: 'Password001',
+);
+await cognitoUser.authenticateUser(authDetails);
+
+// some time later...
+final user = await pool.getCurrentUser();
+final session = await user.getSession();
+print(session.isValid());
+```
