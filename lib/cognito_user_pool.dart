@@ -16,13 +16,14 @@ class CognitoUserPool {
   String userPoolId;
   String clientId;
   Client client;
-  MemoryStorage storage;
+  Storage storage;
 
   CognitoUserPool(
     this.userPoolId,
     this.clientId,
     {
       String endpoint,
+      this.storage,
       this.advancedSecurityDataCollectionFlag = true,
     }
   ) {
@@ -33,7 +34,9 @@ class CognitoUserPool {
     final region = userPoolId.split('_')[0];
     client = new Client(region: region, endpoint: endpoint);
 
-    storage = (new StorageHelper()).getStorage();
+    if (this.storage == null) {
+      this.storage = storage = (new StorageHelper(new MemoryStorage())).getStorage();
+    }
   }
 
   String getUserPoolId() {
@@ -44,10 +47,10 @@ class CognitoUserPool {
     return this.clientId;
   }
 
-  CognitoUser getCurrentUser() {
+  Future<CognitoUser> getCurrentUser() async {
     final lastUserKey = 'CognitoIdentityServiceProvider.${this.clientId}.LastAuthUser';
 
-    final lastAuthUser = storage.getItem(lastUserKey);
+    final lastAuthUser = await storage.getItem(lastUserKey);
     if (lastAuthUser != null) {
       return new CognitoUser(
         lastAuthUser,

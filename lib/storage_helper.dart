@@ -1,35 +1,41 @@
+import 'dart:async';
 
-Map<String, dynamic> dataMemory = {};
+Map<String, dynamic> _dataMemory = {};
 
-class MemoryStorage {
-  setItem(String key, value) {
-    dataMemory[key] = value;
-    return dataMemory[key];
+abstract class Storage {
+  Future<dynamic>setItem(String key, value);
+  Future<dynamic>getItem(String key);
+  Future<dynamic>removeItem(String key);
+  Future<void> clear();
+}
+
+class MemoryStorage extends Storage {
+  setItem(String key, value) async {
+    _dataMemory[key] = value;
+    return _dataMemory[key];
   }
 
-  getItem(String key) {
-    if (dataMemory[key] != null) {
-      return dataMemory[key];
+  getItem(String key) async {
+    if (_dataMemory[key] != null) {
+      return _dataMemory[key];
     }
     return null;
   }
 
-  removeItem(String key) {
-    return dataMemory.remove(key);
+  removeItem(String key) async {
+    return _dataMemory.remove(key);
   }
 
-  clear() {
-    dataMemory = {};
+  clear() async {
+    _dataMemory = {};
   }
 }
 
-class StorageHelper {
-  MemoryStorage storage;
-  StorageHelper() {
-    this.storage = new MemoryStorage();
-  }
+class StorageHelper<S extends Storage> {
+  S storage;
+  StorageHelper(this.storage);
 
-  MemoryStorage getStorage() {
+  S getStorage() {
     return this.storage;
   }
 }
