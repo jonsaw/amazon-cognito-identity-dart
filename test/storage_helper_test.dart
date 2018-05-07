@@ -1,4 +1,3 @@
-
 import 'package:test/test.dart';
 import 'package:amazon_cognito_identity_dart/storage_helper.dart';
 import 'test_storage.dart';
@@ -13,7 +12,8 @@ void main() {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
       expect(await s.getItem('some'), equals(null));
     });
-    test('.setItem() sets up item in memory & .getItem() retrieves item', () async {
+    test('.setItem() sets up item in memory & .getItem() retrieves item',
+        () async {
       final s = new StorageHelper(new MemoryStorage()).getStorage();
       s.setItem('some', 'value');
       expect(await s.getItem('some'), equals('value'));
@@ -48,7 +48,7 @@ void main() {
       };
       await s.setItem('user', params);
       expect(testStorage['test:user'],
-        equals('{"username":"x123","name":"Michael"}'));
+          equals('{"username":"x123","name":"Michael"}'));
     });
     test('.getItem() gets item with decoded values', () async {
       final s = new StorageHelper(new TestCustomStorage('test:')).getStorage();

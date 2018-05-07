@@ -18,15 +18,18 @@ void main() {
   });
   test('json.encode(userAttribute) returns valid JSON string', () {
     var userAttribute = new CognitoUserAttribute(name: 'name', value: 'Jeremy');
-    expect(json.encode(userAttribute), equals('{"Name":"name","Value":"Jeremy"}'));
+    expect(
+        json.encode(userAttribute), equals('{"Name":"name","Value":"Jeremy"}'));
   });
   test('json.encode(List<CognitoUserAttribute>) returns valid JSON string', () {
     List<CognitoUserAttribute> attributes = [
       new CognitoUserAttribute(name: 'first_name', value: 'Josh'),
       new CognitoUserAttribute(name: 'last_name', value: 'Ong'),
     ];
-    expect(json.encode(attributes),
-      equals('[{"Name":"first_name","Value":"Josh"},{"Name":"last_name","Value":"Ong"}]'),
+    expect(
+      json.encode(attributes),
+      equals(
+          '[{"Name":"first_name","Value":"Josh"},{"Name":"last_name","Value":"Ong"}]'),
     );
   });
 }

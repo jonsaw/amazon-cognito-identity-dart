@@ -45,11 +45,9 @@ class CognitoUser {
 
   CognitoUser(
     this.username,
-    this.pool,
-    {
-      this.storage,
-    }
-  ) {
+    this.pool, {
+    this.storage,
+  }) {
     client = pool.client;
     authenticationFlowType = 'USER_SRP_AUTH';
 
@@ -58,65 +56,71 @@ class CognitoUser {
     }
   }
 
-  Future<CognitoUserSession> _authenticateUserInternal(dataAuthenticate, AuthenticationHelper authenticationHelper) async {
+  Future<CognitoUserSession> _authenticateUserInternal(
+      dataAuthenticate, AuthenticationHelper authenticationHelper) async {
     final String challengeName = dataAuthenticate['ChallengeName'];
     var challengeParameters = dataAuthenticate['ChallengeParameters'];
 
     if (challengeName == 'SMS_MFA') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserMfaRequiredException(
-        'SMS_MFA challenge', challengeName: challengeName, challengeParameters: challengeParameters
-      );
+      throw new CognitoUserMfaRequiredException('SMS_MFA challenge',
+          challengeName: challengeName,
+          challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'SELECT_MFA_TYPE') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserSelectMfaTypeException(
-        'SELECT_MFA_TYPE challenge', challengeName: challengeName, challengeParameters: challengeParameters
-      );
+      throw new CognitoUserSelectMfaTypeException('SELECT_MFA_TYPE challenge',
+          challengeName: challengeName,
+          challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'MFA_SETUP') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserMfaSetupException(
-        'MFA_SETUP challenge', challengeName: challengeName, challengeParameters: challengeParameters
-      );
+      throw new CognitoUserMfaSetupException('MFA_SETUP challenge',
+          challengeName: challengeName,
+          challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'SOFTWARE_TOKEN_MFA') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserTotpRequiredException(
-        'SOFTWARE_TOKEN_MFA challenge', challengeName: challengeName, challengeParameters: challengeParameters
-      );
+      throw new CognitoUserTotpRequiredException('SOFTWARE_TOKEN_MFA challenge',
+          challengeName: challengeName,
+          challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'CUSTOM_CHALLENGE') {
       _session = dataAuthenticate['Session'];
       throw new CognitoUserCustomChallengeException(
-        'CUSTOM_CHALLENGE challenge', challengeParameters: challengeParameters
-      );
+          'CUSTOM_CHALLENGE challenge',
+          challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'DEVICE_SRP_AUTH') {
       await this.getDeviceResponse();
       return _signInUserSession;
     }
-    _signInUserSession = this.getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
+    _signInUserSession =
+        this.getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
     await this.cacheTokens();
 
-    final newDeviceMetadata = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata'];
+    final newDeviceMetadata =
+        dataAuthenticate['AuthenticationResult']['NewDeviceMetadata'];
     if (newDeviceMetadata == null) {
       return _signInUserSession;
     }
 
     authenticationHelper.generateHashDevice(
-      dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceGroupKey'],
-      dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey'],
+      dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+          ['DeviceGroupKey'],
+      dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+          ['DeviceKey'],
     );
 
     final Map<String, String> deviceSecretVerifierConfig = {
       'Salt': base64.encode(hex.decode(authenticationHelper.getSaltDevices())),
-      'PasswordVerifier': base64.encode(hex.decode(authenticationHelper.getVerifierDevices()))
+      'PasswordVerifier':
+          base64.encode(hex.decode(authenticationHelper.getVerifierDevices()))
     };
 
     _verfierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
@@ -134,13 +138,13 @@ class CognitoUser {
 
     final dataConfirm = client.request('ConfirmDevice', paramsConfirmDevice);
 
-    _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey'];
+    _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+        ['DeviceKey'];
     await cacheDeviceKeyAndPassword();
 
     if (dataConfirm['UserConfirmationNecessary'] == true) {
       throw new CognitoUserConfirmationNecessaryException(
-        'UserConfirmationNecessary', _signInUserSession
-      );
+          'UserConfirmationNecessary', _signInUserSession);
     }
     return _signInUserSession;
   }
@@ -158,7 +162,8 @@ class CognitoUser {
       return _signInUserSession;
     }
 
-    final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
+    final keyPrefix =
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final idTokenKey = '${keyPrefix}.idToken';
     final accessTokenKey = '${keyPrefix}.accessToken';
     final refreshTokenKey = '${keyPrefix}.refreshToken';
@@ -166,8 +171,10 @@ class CognitoUser {
 
     if (await storage.getItem(idTokenKey) != null) {
       final idToken = new CognitoIdToken(await storage.getItem(idTokenKey));
-      final accessToken = new CognitoAccessToken(await storage.getItem(accessTokenKey));
-      final refreshToken = new CognitoRefreshToken(await storage.getItem(refreshTokenKey));
+      final accessToken =
+          new CognitoAccessToken(await storage.getItem(accessTokenKey));
+      final refreshToken =
+          new CognitoRefreshToken(await storage.getItem(refreshTokenKey));
       final clockDrift = int.parse(await storage.getItem(clockDriftKey)) ?? 0;
 
       final cachedSession = new CognitoUserSession(
@@ -183,18 +190,21 @@ class CognitoUser {
       }
 
       if (refreshToken.getToken() == null) {
-        throw new Exception('Cannot retrieve a new session. Please authenticate.');
+        throw new Exception(
+            'Cannot retrieve a new session. Please authenticate.');
       }
 
       return refreshSession(refreshToken);
     }
-    throw new Exception('Local storage is missing an ID Token, Please authenticate');
+    throw new Exception(
+        'Local storage is missing an ID Token, Please authenticate');
   }
 
   /**
    * This uses the refreshToken to retrieve a new session
    */
-  Future<CognitoUserSession> refreshSession(CognitoRefreshToken refreshToken) async {
+  Future<CognitoUserSession> refreshSession(
+      CognitoRefreshToken refreshToken) async {
     final Map<String, String> authParameters = {
       'REFRESH_TOKEN': refreshToken.getToken(),
     };
@@ -259,7 +269,8 @@ class CognitoUser {
   }
 
   getCachedDeviceKeyAndPassword() async {
-    final String keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
+    final String keyPrefix =
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final String deviceKeyKey = '${keyPrefix}.deviceKey';
     final String randomPasswordKey = '${keyPrefix}.randomPasswordKey';
     final String deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
@@ -270,6 +281,7 @@ class CognitoUser {
       _randomPassword = await storage.getItem(randomPasswordKey);
     }
   }
+
   /**
    * This returns the user context data for advanced security feature.
    */
@@ -285,7 +297,8 @@ class CognitoUser {
     final accessToken = new CognitoAccessToken(authResult['AccessToken']);
     final refreshToken = new CognitoRefreshToken(authResult['RefreshToken']);
 
-    return new CognitoUserSession(idToken, accessToken, refreshToken: refreshToken);
+    return new CognitoUserSession(idToken, accessToken,
+        refreshToken: refreshToken);
   }
 
   /**
@@ -318,11 +331,7 @@ class CognitoUser {
     final salt = BigInt.parse(challengeParameters['SALT'], radix: 16);
 
     final hkdf = authenticationHelper.getPasswordAuthenticationKey(
-      _deviceKey,
-      _randomPassword,
-      serverBValue,
-      salt
-    );
+        _deviceKey, _randomPassword, serverBValue, salt);
 
     final dateNow = dateHelper.getNowString();
 
@@ -355,9 +364,11 @@ class CognitoUser {
       paramsResp['UserContextData'] = getUserContextData();
     }
 
-    final dataAuthenticate = await client.request('RespondToAuthChallenge', paramsResp);
+    final dataAuthenticate =
+        await client.request('RespondToAuthChallenge', paramsResp);
 
-    _signInUserSession = this.getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
+    _signInUserSession =
+        this.getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
     await this.cacheTokens();
     return _signInUserSession;
   }
@@ -365,7 +376,8 @@ class CognitoUser {
   /**
    * This is used for authenticating the user through the custom authentication flow.
    */
-  Future<CognitoUserSession> initiateAuth(AuthenticationDetails authDetails) async {
+  Future<CognitoUserSession> initiateAuth(
+      AuthenticationDetails authDetails) async {
     final authParameters = authDetails.getAuthParameters();
     authParameters.add(new AttributeArg(
       name: 'USERNAME',
@@ -389,10 +401,8 @@ class CognitoUser {
     final challengeParameters = data['ChallengeParameters'];
     if (challengeName == 'CUSTOM_CHALLENGE') {
       _session = data['Session'];
-      throw new CognitoUserCustomChallengeException(
-        'CUSTOM_CHALLENGE required',
-        challengeParameters: challengeParameters
-      );
+      throw new CognitoUserCustomChallengeException('CUSTOM_CHALLENGE required',
+          challengeParameters: challengeParameters);
     }
 
     _signInUserSession = getCognitoUserSession(data['AuthenticationResult']);
@@ -404,7 +414,8 @@ class CognitoUser {
   /**
    * This is used for authenticating the user.
    */
-  Future<CognitoUserSession> authenticateUser(AuthenticationDetails authDetails) async {
+  Future<CognitoUserSession> authenticateUser(
+      AuthenticationDetails authDetails) async {
     if (authenticationFlowType == 'USER_PASSWORD_AUTH') {
       return await _authenticateUserPlainUsernamePassword(authDetails);
     } else if (authenticationFlowType == 'USER_SRP_AUTH') {
@@ -435,10 +446,8 @@ class CognitoUser {
     await clearCachedTokens();
   }
 
-
   Future<CognitoUserSession> _authenticateUserPlainUsernamePassword(
-    AuthenticationDetails authDetails
-  ) async {
+      AuthenticationDetails authDetails) async {
     Map<String, String> authParameters = new Map();
     authParameters['USERNAME'] = this.username;
     authParameters['PASSWORD'] = authDetails.getPassword();
@@ -545,12 +554,11 @@ class CognitoUser {
     Future<dynamic> respondToAuthChallenge(challenge) async {
       var dataChallenge;
       try {
-        dataChallenge = await client.request('RespondToAuthChallenge', challenge);
-      } on ClientException catch(e) {
-        if (
-          e.code == 'ResourceNotFoundException' &&
-          e.message.toLowerCase().indexOf('device') != -1
-        ) {
+        dataChallenge =
+            await client.request('RespondToAuthChallenge', challenge);
+      } on ClientException catch (e) {
+        if (e.code == 'ResourceNotFoundException' &&
+            e.message.toLowerCase().indexOf('device') != -1) {
           challengeResponses['DEVICE_KEY'] = null;
           _deviceKey = null;
           _randomPassword = null;
@@ -585,26 +593,24 @@ class CognitoUser {
       var rawRequiredAttributes;
       final requiredAttributes = [];
       final userAttributesPrefix = authenticationHelper
-        .getNewPasswordRequiredChallengeUserAttributePrefix();
+          .getNewPasswordRequiredChallengeUserAttributePrefix();
 
       if (dataAuthenticate['ChallengeParameters'] != null) {
-        userAttributes = json.decode(dataAuthenticate['ChallengeParameters']['userAttributes']);
-        rawRequiredAttributes = json.decode(dataAuthenticate['ChallengeParameters']['requiredAttributes']);
+        userAttributes = json
+            .decode(dataAuthenticate['ChallengeParameters']['userAttributes']);
+        rawRequiredAttributes = json.decode(
+            dataAuthenticate['ChallengeParameters']['requiredAttributes']);
       }
 
       if (rawRequiredAttributes != null) {
         rawRequiredAttributes.forEach((attribute) {
-          requiredAttributes.add(
-            attribute.substring(userAttributesPrefix.length)
-          );
+          requiredAttributes
+              .add(attribute.substring(userAttributesPrefix.length));
         });
       }
 
       throw new CognitoUserNewPasswordRequiredException(
-        'New Password required',
-        userAttributes,
-        requiredAttributes
-      );
+          'New Password required', userAttributes, requiredAttributes);
     }
     return _authenticateUserInternal(dataAuthenticate, authenticationHelper);
   }
@@ -612,10 +618,8 @@ class CognitoUser {
   /**
    * This is used for a certain user to confirm the registration by using a confirmation code
    */
-  Future<String> confirmRegistration(
-    String confirmationCode,
-    [bool forceAliasCreation = false]
-  ) async {
+  Future<String> confirmRegistration(String confirmationCode,
+      [bool forceAliasCreation = false]) async {
     Map<String, dynamic> params = {
       'ClientId': pool.getClientId(),
       'ConfirmationCode': confirmationCode,
@@ -646,15 +650,15 @@ class CognitoUser {
   /**
    * This is used by the user once he has the responses to a custom challenge
    */
-  Future<CognitoUserSession> sendCustomChallengeAnswer(String answerChallenge) async {
+  Future<CognitoUserSession> sendCustomChallengeAnswer(
+      String answerChallenge) async {
     final Map<String, String> challengeResponses = {
       'USERNAME': this.username,
       'ANSWER': answerChallenge,
     };
 
-    final authenticationHelper = new AuthenticationHelper(
-      pool.getUserPoolId().split('_')[1]
-    );
+    final authenticationHelper =
+        new AuthenticationHelper(pool.getUserPoolId().split('_')[1]);
 
     getCachedDeviceKeyAndPassword();
     if (_deviceKey != null) {
@@ -680,7 +684,8 @@ class CognitoUser {
   /**
    * This is used by the user once he has an MFA code
    */
-  Future<CognitoUserSession> sendMFACode(String confirmationCode, [String mfaType = 'SMS_MFA']) async {
+  Future<CognitoUserSession> sendMFACode(String confirmationCode,
+      [String mfaType = 'SMS_MFA']) async {
     final Map<String, String> challengeResponses = {
       'USERNAME': this.username,
       'SMS_MFA_CODE': confirmationCode,
@@ -703,7 +708,8 @@ class CognitoUser {
       paramsReq['UserContextData'] = getUserContextData();
     }
 
-    final dataAuthenticate = client.request('RespondToAuthChallenge', paramsReq);
+    final dataAuthenticate =
+        client.request('RespondToAuthChallenge', paramsReq);
 
     final String challengeName = dataAuthenticate['ChallengeName'];
 
@@ -711,45 +717,50 @@ class CognitoUser {
       return getDeviceResponse();
     }
 
-    _signInUserSession = getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
+    _signInUserSession =
+        getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
     await cacheTokens();
 
     if (dataAuthenticate['AuthenticationResult']['NewDeviceMetadata'] == null) {
       return _signInUserSession;
     }
 
-    final authenticationHelper = new AuthenticationHelper(
-      pool.getUserPoolId().split('_')[1]
-    );
+    final authenticationHelper =
+        new AuthenticationHelper(pool.getUserPoolId().split('_')[1]);
     authenticationHelper.generateHashDevice(
-      dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceGroupKey'],
-      dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey']
-    );
+        dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+            ['DeviceGroupKey'],
+        dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+            ['DeviceKey']);
 
     final Map<String, String> deviceSecretVerifierConfig = {
       'Salt': base64.encode(hex.decode(authenticationHelper.getSaltDevices())),
-      'PasswordVerifier': base64.encode(hex.decode(authenticationHelper.getVerifierDevices())),
+      'PasswordVerifier':
+          base64.encode(hex.decode(authenticationHelper.getVerifierDevices())),
     };
 
     _verfierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
-    _deviceGroupKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceGroupKey'];
+    _deviceGroupKey = dataAuthenticate['AuthenticationResult']
+        ['NewDeviceMetadata']['DeviceGroupKey'];
     _randomPassword = authenticationHelper.getRandomPassword();
 
     final Map<String, dynamic> confirmDeviceParamsReq = {
-      'DeviceKey': dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey'],
+      'DeviceKey': dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+          ['DeviceKey'],
       'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
       'DeviceSecretVerifierConfig': deviceSecretVerifierConfig,
 
       // TODO: identify device name
       'DeviceName': 'Dart-enabled-device',
     };
-    final dataConfirm = await client.request('ConfirmDevice', confirmDeviceParamsReq);
-    _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']['DeviceKey'];
+    final dataConfirm =
+        await client.request('ConfirmDevice', confirmDeviceParamsReq);
+    _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+        ['DeviceKey'];
     await cacheDeviceKeyAndPassword();
     if (dataConfirm['UserConfirmationNecessary'] == true) {
       throw new CognitoUserConfirmationNecessaryException(
-        'UserConfirmationNecessary', _signInUserSession
-      );
+          'UserConfirmationNecessary', _signInUserSession);
     }
 
     return _signInUserSession;
@@ -758,7 +769,8 @@ class CognitoUser {
   /**
    * This is used by an authenticated user to change the current password
    */
-  Future<String> changePassword(String oldUserPassword, String newUserPassword) async {
+  Future<String> changePassword(
+      String oldUserPassword, String newUserPassword) async {
     if (!(_signInUserSession != null && _signInUserSession.isValid())) {
       throw new Exception('User is not authenticated');
     }
@@ -785,9 +797,12 @@ class CognitoUser {
     final lastUserKey = '${keyPrefix}.LastAuthUser';
 
     await Future.wait([
-      storage.setItem(idTokenKey, _signInUserSession.getIdToken().getJwtToken()),
-      storage.setItem(accessTokenKey, _signInUserSession.getAccessToken().getJwtToken()),
-      storage.setItem(refreshTokenKey, _signInUserSession.getRefreshToken().getToken()),
+      storage.setItem(
+          idTokenKey, _signInUserSession.getIdToken().getJwtToken()),
+      storage.setItem(
+          accessTokenKey, _signInUserSession.getAccessToken().getJwtToken()),
+      storage.setItem(
+          refreshTokenKey, _signInUserSession.getRefreshToken().getToken()),
       storage.setItem(clockDriftKey, '${_signInUserSession.getClockDrift()}'),
       storage.setItem(lastUserKey, username),
     ]);
@@ -815,7 +830,8 @@ class CognitoUser {
    * This is used to cache the device key and device group and device password
    */
   void cacheDeviceKeyAndPassword() async {
-    final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
+    final keyPrefix =
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final deviceKeyKey = '${keyPrefix}.deviceKey';
     final randomPasswordKey = '${keyPrefix}.randomPasswordKey';
     final deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
@@ -831,7 +847,8 @@ class CognitoUser {
    * This is used to clear the device key info from local storage
    */
   void clearCachedDeviceKeyAndPassword() async {
-    final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
+    final keyPrefix =
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
     final deviceKeyKey = '${keyPrefix}.deviceKey';
     final randomPasswordKey = '${keyPrefix}.randomPasswordKey';
     final deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';

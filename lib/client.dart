@@ -8,13 +8,11 @@ class ClientException implements Exception {
   String name;
   String message;
   ClientException(
-    this.message,
-    {
-      this.code,
-      this.statusCode,
-      this.name,
-    }
-  );
+    this.message, {
+    this.code,
+    this.statusCode,
+    this.name,
+  });
 }
 
 class Client {

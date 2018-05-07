@@ -3,9 +3,9 @@ import 'dart:async';
 Map<String, dynamic> _dataMemory = {};
 
 abstract class Storage {
-  Future<dynamic>setItem(String key, value);
-  Future<dynamic>getItem(String key);
-  Future<dynamic>removeItem(String key);
+  Future<dynamic> setItem(String key, value);
+  Future<dynamic> getItem(String key);
+  Future<dynamic> removeItem(String key);
   Future<void> clear();
 }
 

@@ -1,3 +1,7 @@
+## 0.0.3
+
+- Format code with dartfmt
+
 ## 0.0.2
 
 - Add Custom Storage support

@@ -1,4 +1,3 @@
-
 class CognitoRefreshToken {
   String token;
   CognitoRefreshToken([String refereshToken = '']) {

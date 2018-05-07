@@ -6,7 +6,8 @@ void main() {
     Client client = new Client(
       region: 'ap-southeast-1',
     );
-    expect(client.endpoint, equals('https://cognito-idp.ap-southeast-1.amazonaws.com/'));
+    expect(client.endpoint,
+        equals('https://cognito-idp.ap-southeast-1.amazonaws.com/'));
   });
 
   test('intiating Client with endpoint should use endpoint', () {
@@ -14,6 +15,7 @@ void main() {
       endpoint: 'https://cognito-idp.custom-region.aws.com',
       region: 'ap-southeaset-10',
     );
-    expect(client.endpoint, equals('https://cognito-idp.custom-region.aws.com'));
+    expect(
+        client.endpoint, equals('https://cognito-idp.custom-region.aws.com'));
   });
 }

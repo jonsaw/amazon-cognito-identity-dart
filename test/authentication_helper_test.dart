@@ -5,9 +5,10 @@ import 'package:amazon_cognito_identity_dart/authentication_helper.dart';
 void main() {
   test('constructor should generate valid k', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
-    expect(h.k.toRadixString(16),
-      equals('538282c4354742d7cbbde2359fcf67f9f5b3a6b08791e5011b43b8a5b66d9ee6')
-    );
+    expect(
+        h.k.toRadixString(16),
+        equals(
+            '538282c4354742d7cbbde2359fcf67f9f5b3a6b08791e5011b43b8a5b66d9ee6'));
   });
   test('.getLargeAValue() returns largeAValue', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
@@ -24,9 +25,10 @@ void main() {
   });
   test('.hexHash() generates valid hash', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
-    expect(h.hexHash('1ab23cd4'),
-      equals('7999d2b0d9387917b38fcbd522f14229cafc44bf34f59aadb4a4766056697273')
-    );
+    expect(
+        h.hexHash('1ab23cd4'),
+        equals(
+            '7999d2b0d9387917b38fcbd522f14229cafc44bf34f59aadb4a4766056697273'));
   });
   test('.generateHashDevice() generates verifierDevices', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
@@ -63,22 +65,25 @@ void main() {
   });
   test('.computehkdf() generates valid base64 encodable string', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
-    final r = h.computehkdf(utf8.encode('Password01'), utf8.encode('Salty Item'));
+    final r =
+        h.computehkdf(utf8.encode('Password01'), utf8.encode('Salty Item'));
     expect(base64.encode(r), equals('xqedift4s107XDR5zHZMHw=='));
   });
   test('.calculateU() generates valid BigInt', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
     final a = BigInt.parse('aff001', radix: 16);
     final b = BigInt.parse('bff002', radix: 16);
-    expect(h.calculateU(a, b).toRadixString(16),
-      equals('1c3e2e616cd39a68b10c71ac12ce400798579792df1464e5519ff41446095a57')
-    );
+    expect(
+        h.calculateU(a, b).toRadixString(16),
+        equals(
+            '1c3e2e616cd39a68b10c71ac12ce400798579792df1464e5519ff41446095a57'));
   });
   test('.getPasswordAuthenticationKey() should return valid random base64', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
     final serverBValue = BigInt.parse('aff001', radix: 16);
     final salt = BigInt.parse('bff002', radix: 16);
-    final hkdf = h.getPasswordAuthenticationKey('see.saw@gmail.com', 'Password01!', serverBValue, salt);
+    final hkdf = h.getPasswordAuthenticationKey(
+        'see.saw@gmail.com', 'Password01!', serverBValue, salt);
     expect(base64.encode(hkdf).length, equals(24));
   });
 }

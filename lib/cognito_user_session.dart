@@ -11,13 +11,12 @@ class CognitoUserSession {
 
   CognitoUserSession(
     this.idToken,
-    this.accessToken,
-    {
-      this.refreshToken,
-      int clockDrift,
-    }
-  ) {
-    this.clockDrift = clockDrift == null ? this.calculateClockDrift() : clockDrift;
+    this.accessToken, {
+    this.refreshToken,
+    int clockDrift,
+  }) {
+    this.clockDrift =
+        clockDrift == null ? this.calculateClockDrift() : clockDrift;
   }
 
   /**
@@ -65,6 +64,7 @@ class CognitoUserSession {
     final now = (new DateTime.now().millisecondsSinceEpoch / 1000).floor();
     final adjusted = now - clockDrift;
 
-    return adjusted < accessToken.getExpiration() && adjusted < idToken.getExpiration();
+    return adjusted < accessToken.getExpiration() &&
+        adjusted < idToken.getExpiration();
   }
 }
