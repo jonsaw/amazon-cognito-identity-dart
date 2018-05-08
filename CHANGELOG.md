@@ -1,3 +1,6 @@
+## 0.0.5
+- Add get AWS credentials for authenticated users
+
 ## 0.0.4
 
 - Remove dart:io dependency
