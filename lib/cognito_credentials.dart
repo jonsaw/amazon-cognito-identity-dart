@@ -42,7 +42,7 @@ class CognitoCredentials {
       };
       final data = await _client.request('GetCredentialsForIdentity', paramsReq,
           service: 'AWSCognitoIdentityService',
-          endpoint: 'https://cognito-identity.ap-southeast-1.amazonaws.com/');
+          endpoint: 'https://cognito-identity.${_region}.amazonaws.com/');
 
       accessKeyId = data['Credentials']['AccessKeyId'];
       secretAccessKey = data['Credentials']['SecretKey'];

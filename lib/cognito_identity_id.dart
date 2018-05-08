@@ -37,7 +37,7 @@ class CognitoIdentityId {
     };
     final data = await _client.request('GetId', paramsReq,
         service: 'AWSCognitoIdentityService',
-        endpoint: 'https://cognito-identity.ap-southeast-1.amazonaws.com/');
+        endpoint: 'https://cognito-identity.${_region}.amazonaws.com/');
 
     this.identityId = data['IdentityId'];
     _pool.storage.setItem(identityIdKey, this.identityId);
