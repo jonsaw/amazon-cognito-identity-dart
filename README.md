@@ -125,7 +125,7 @@ await cognitoUser.globalSignOut();
 
 ### Get AWS Credentials
 
-Get a authenticated user's AWS Credentials. Use with other signing processes like [Signature Version 4].(https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+Get a authenticated user's AWS Credentials. Use with other signing processes like [Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
 ```dart
 import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
