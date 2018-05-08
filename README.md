@@ -121,7 +121,41 @@ __Use case 15.__ Global signout for authenticated users (invalidates all issued 
 await cognitoUser.globalSignOut();
 ```
 
-## Custom Storage
+## Addtional Features
+
+### Get AWS Credentials
+
+Get a authenticated user's AWS Credentials. Use with other signing processes like [Signature Version 4].(https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+
+```dart
+import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
+import 'package:amazon_cognito_identity_dart/cognito_user.dart';
+import 'package:amazon_cognito_identity_dart/authentication_details.dart';
+import 'package:amazon_cognito_identity_dart/cognito_credentials.dart';
+
+final userPool = new CognitoUserPool(
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
+final cognitoUser = new CognitoUser(
+    'email@inspire.my', userPool);
+final authDetails = new AuthenticationDetails(
+  username: 'email@inspire.my',
+  password: 'Password001',
+);
+final session = await cognitoUser.authenticateUser(authDetails);
+
+final credentials = new CognitoCredentials(
+    'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', userPool);
+await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
+
+print(credentials.accessKeyId);
+print(credentials.secretAccessKey);
+print(credentials.sessionToken);
+```
+
+### Use Custom Storage
+
+Persist user session using custom storage.
+
 ```dart
 import 'dart:convert';
 import 'package:amazon_cognito_identity_dart/storage_helper.dart';
