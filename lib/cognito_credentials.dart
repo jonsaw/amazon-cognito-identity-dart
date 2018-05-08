@@ -22,6 +22,9 @@ class CognitoCredentials {
     _client = pool.client;
   }
 
+  /**
+   * Get AWS Credentials for authenticated user
+   */
   Future<void> getAwsCredentials(token) async {
     if (expireTime == null ||
         new DateTime.now().millisecondsSinceEpoch > expireTime - 60000) {

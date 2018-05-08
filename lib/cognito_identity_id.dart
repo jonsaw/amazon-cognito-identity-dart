@@ -17,6 +17,9 @@ class CognitoIdentityId {
     _client = pool.client;
   }
 
+  /**
+   * Get AWS Identity Id for authenticated user
+   */
   Future<String> getIdentityId(token) async {
     final identityIdKey = 'aws.cognito.identity-id.${_identityPoolId}';
     String identityId = await _pool.storage.getItem(identityIdKey);
