@@ -125,7 +125,7 @@ await cognitoUser.globalSignOut();
 
 ### Get AWS Credentials
 
-Get a authenticated user's AWS Credentials. Use with other signing processes like [Signature Version 4].(https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+Get a authenticated user's AWS Credentials. Use with other signing processes like [Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
 ```dart
 import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
@@ -150,6 +150,39 @@ await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
 print(credentials.accessKeyId);
 print(credentials.secretAccessKey);
 print(credentials.sessionToken);
+```
+
+### Signing Requests
+
+Signing requests for authenticated users for access to secured routes to API Gateway and Lambda.
+
+```dart
+import 'package:http/http.dart' as http;
+import 'package:amazon_cognito_identity_dart/sig_v4_helper.dart';
+
+final credentials = new CognitoCredentials(
+    'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', userPool);
+await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
+
+final awsSigV4Client = new AwsSigV4Client(credentials.accessKeyId,
+    credentials.secretAccessKey,
+    'https://xxxx.execute-api.ap-southeast-1.amazonaws.com/dev',
+    sessionToken: credentials.sessionToken, region: 'ap-southeast-1');
+
+final signedRequest = new SigV4Request(awsSigV4Client,
+    method: 'POST',
+    path: '/projects',
+    headers: new Map<String, String>.from(
+        {'header-1': 'one', 'header-2': 'two'}),
+    queryParams: new Map<String, String>.from({'tracking': 'x123'}),
+    body: new Map<String, dynamic>.from({'color': 'blue'}));
+
+final data = await http.post(
+  signedRequest.url,
+  headers: signedRequest.headers,
+  body: signedRequest.body,
+);
+print(data);
 ```
 
 ### Use Custom Storage
