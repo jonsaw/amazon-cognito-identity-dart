@@ -12,25 +12,28 @@ class CognitoUserPoolData {
 }
 
 class CognitoUserPool {
+  String _userPoolId;
+  String _clientId;
+  String _region;
   bool advancedSecurityDataCollectionFlag;
-  String userPoolId;
-  String clientId;
   Client client;
   Storage storage;
 
   CognitoUserPool(
-    this.userPoolId,
-    this.clientId, {
+    String userPoolId,
+    String clientId, {
     String endpoint,
     this.storage,
     this.advancedSecurityDataCollectionFlag = true,
   }) {
+    _userPoolId = userPoolId;
+    _clientId = clientId;
     RegExp regExp = new RegExp(r'^[\w-]+_.+$');
     if (!regExp.hasMatch(userPoolId)) {
       throw new ArgumentError('Invalid userPoolId format.');
     }
-    final region = userPoolId.split('_')[0];
-    client = new Client(region: region, endpoint: endpoint);
+    _region = userPoolId.split('_')[0];
+    client = new Client(region: _region, endpoint: endpoint);
 
     if (this.storage == null) {
       this.storage =
@@ -39,16 +42,20 @@ class CognitoUserPool {
   }
 
   String getUserPoolId() {
-    return this.userPoolId;
+    return _userPoolId;
   }
 
   String getClientId() {
-    return this.clientId;
+    return _clientId;
+  }
+
+  String getRegion() {
+    return _region;
   }
 
   Future<CognitoUser> getCurrentUser() async {
     final lastUserKey =
-        'CognitoIdentityServiceProvider.${this.clientId}.LastAuthUser';
+        'CognitoIdentityServiceProvider.${_clientId}.LastAuthUser';
 
     final lastAuthUser = await storage.getItem(lastUserKey);
     if (lastAuthUser != null) {
@@ -80,7 +87,7 @@ class CognitoUserPool {
     List<AttributeArg> validationData,
   }) async {
     var params = new Map();
-    params['ClientId'] = this.clientId;
+    params['ClientId'] = _clientId;
     params['Username'] = username;
     params['Password'] = password;
     params['UserAttributes'] = userAttributes;
