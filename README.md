@@ -1,4 +1,4 @@
-# Unofficial Amazon Cognito Identity SDK for Dart
+# Amazon Cognito Identity SDK for Dart
 Unofficial Amazon Cognito Identity SDK written in Dart for Dart.
 
 Rewrite of [amazon-cognito-identity-js](https://github.com/aws/aws-amplify/tree/master/packages/amazon-cognito-identity-js) in [Dart](https://www.dartlang.org/).
@@ -13,9 +13,7 @@ import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
 import 'package:amazon_cognito_identity_dart/attribute_arg.dart';
 
 final userPool = new CognitoUserPool(
-  'ap-southeast-1_xxxxxxxxx',
-  'xxxxxxxxxxxxxxxxxxxxxxxxxx'
-);
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
 final userAttributes = [
   new AttributeArg(name: 'first_name', value: 'Jimmy'),
   new AttributeArg(name: 'last_name', value: 'Wong'),
@@ -41,14 +39,10 @@ import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
 import 'package:amazon_cognito_identity_dart/cognito_user.dart';
 
 final userPool = new CognitoUserPool(
-  'ap-southeast-1_xxxxxxxxx',
-  'xxxxxxxxxxxxxxxxxxxxxxxxxx'
-);
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
 
 final cognitoUser = new CognitoUser(
-  'email@inspire.my',
-  pool,
-);
+    'email@inspire.my', userPool);
 
 var result;
 try {
@@ -66,13 +60,9 @@ import 'package:amazon_cognito_identity_dart/cognito_user.dart';
 import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
 
 final userPool = new CognitoUserPool(
-  'ap-southeast-1_xxxxxxxxx',
-  'xxxxxxxxxxxxxxxxxxxxxxxxxx'
-);
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
 final cognitoUser = new CognitoUser(
-  'email@inspire.my',
-  pool,
-);
+    'email@inspire.my', userPool);
 final String status;
 try {
   status = await cognitoUser.resendConfirmationCode();
@@ -90,13 +80,9 @@ import 'package:amazon_cognito_identity_dart/cognito_user_session.dart';
 import 'package:amazon_cognito_identity_dart/cognito_user_exceptions.dart';
 
 final userPool = new CognitoUserPool(
-  'ap-southeast-1_xxxxxxxxx',
-  'xxxxxxxxxxxxxxxxxxxxxxxxxx'
-);
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
 final cognitoUser = new CognitoUser(
-  'email@inspire.my',
-  pool,
-);
+    'email@inspire.my', userPool);
 final authDetails = new AuthenticationDetails(
   username: 'email@inspire.my',
   password: 'Password001',
@@ -172,16 +158,12 @@ class CustomStorage extends Storage {
 
 final customStore = new CustomStorage('custom:');
 
-final pool = new CognitoUserPool(
-  'ap-southeast-1_xxxxxxxxx',
-  'xxxxxxxxxxxxxxxxxxxxxxxxxx'
-  storage: customStore,
-);
+final userPool = new CognitoUserPool(
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
+    storage: customStore);
 final cognitoUser = new CognitoUser(
-  'email@inspire.my',
-  pool,
-  storage: customStore,
-);
+    'email@inspire.my', userPool,
+    storage: customStore);
 final authDetails = new AuthenticationDetails(
   username: 'email@inspire.my',
   password: 'Password001',
@@ -189,7 +171,7 @@ final authDetails = new AuthenticationDetails(
 await cognitoUser.authenticateUser(authDetails);
 
 // some time later...
-final user = await pool.getCurrentUser();
+final user = await userPool.getCurrentUser();
 final session = await user.getSession();
 print(session.isValid());
 ```
