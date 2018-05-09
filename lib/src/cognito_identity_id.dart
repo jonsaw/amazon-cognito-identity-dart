@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/client.dart';
+import 'client.dart';
 
 class CognitoIdentityId {
   String identityId;

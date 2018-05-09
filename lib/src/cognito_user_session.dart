@@ -1,7 +1,7 @@
 import 'dart:math';
-import 'package:amazon_cognito_identity_dart/cognito_access_token.dart';
-import 'package:amazon_cognito_identity_dart/cognito_id_token.dart';
-import 'package:amazon_cognito_identity_dart/cognito_refresh_token.dart';
+import 'cognito_access_token.dart';
+import 'cognito_id_token.dart';
+import 'cognito_refresh_token.dart';
 
 class CognitoUserSession {
   CognitoIdToken idToken;

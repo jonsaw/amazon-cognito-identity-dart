@@ -1,4 +1,4 @@
-import 'package:amazon_cognito_identity_dart/cognito_user_session.dart';
+import 'cognito_user_session.dart';
 
 class CognitoUserNewPasswordRequiredException implements Exception {
   String message;

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/client.dart';
-import 'package:amazon_cognito_identity_dart/cognito_identity_id.dart';
+import 'client.dart';
+import 'cognito_identity_id.dart';
 
 class CognitoCredentials {
   String _region;

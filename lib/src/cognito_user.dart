@@ -2,18 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
-import 'package:amazon_cognito_identity_dart/attribute_arg.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_exceptions.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_session.dart';
-import 'package:amazon_cognito_identity_dart/cognito_id_token.dart';
-import 'package:amazon_cognito_identity_dart/cognito_access_token.dart';
-import 'package:amazon_cognito_identity_dart/cognito_refresh_token.dart';
-import 'package:amazon_cognito_identity_dart/client.dart';
-import 'package:amazon_cognito_identity_dart/storage_helper.dart';
-import 'package:amazon_cognito_identity_dart/authentication_details.dart';
-import 'package:amazon_cognito_identity_dart/authentication_helper.dart';
-import 'package:amazon_cognito_identity_dart/date_helper.dart';
+import 'attribute_arg.dart';
+import 'cognito_user_exceptions.dart';
+import 'cognito_user_pool.dart';
+import 'cognito_user_session.dart';
+import 'cognito_id_token.dart';
+import 'cognito_access_token.dart';
+import 'cognito_refresh_token.dart';
+import 'client.dart';
+import 'cognito_client_exceptions.dart';
+import 'storage_helper.dart';
+import 'authentication_details.dart';
+import 'authentication_helper.dart';
+import 'date_helper.dart';
 
 class CognitoUserAuthResult {
   String challengeName;
@@ -230,7 +231,7 @@ class CognitoUser {
     var authResult;
     try {
       authResult = await client.request('InitiateAuth', paramsReq);
-    } on ClientException catch (e) {
+    } on CognitoClientException catch (e) {
       if (e.code == 'NotAuthorizedException') {
         await clearCachedTokens();
       }
@@ -556,7 +557,7 @@ class CognitoUser {
       try {
         dataChallenge =
             await client.request('RespondToAuthChallenge', challenge);
-      } on ClientException catch (e) {
+      } on CognitoClientException catch (e) {
         if (e.code == 'ResourceNotFoundException' &&
             e.message.toLowerCase().indexOf('device') != -1) {
           challengeResponses['DEVICE_KEY'] = null;

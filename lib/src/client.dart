@@ -1,18 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-class ClientException implements Exception {
-  int statusCode;
-  String code;
-  String name;
-  String message;
-  ClientException(
-    this.message, {
-    this.code,
-    this.statusCode,
-    this.name,
-  });
-}
+import 'cognito_client_exceptions.dart';
 
 class Client {
   String _service;
@@ -52,17 +40,17 @@ class Client {
       );
     } catch (e) {
       if (e.toString().startsWith('SocketException:')) {
-        throw new ClientException(
+        throw new CognitoClientException(
           e.message,
           code: 'NetworkError',
         );
       }
-      throw new ClientException('Unknown Error', code: 'Unknown error');
+      throw new CognitoClientException('Unknown Error', code: 'Unknown error');
     }
     final data = json.decode(response.body);
     if (response.statusCode < 200 || response.statusCode > 299) {
       String code = (data['__type'] ?? data['code']).split('#').removeLast();
-      throw new ClientException(
+      throw new CognitoClientException(
         data['message'],
         code: code,
         name: code,

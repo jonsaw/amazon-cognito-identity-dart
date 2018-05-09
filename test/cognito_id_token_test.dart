@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:amazon_cognito_identity_dart/cognito_id_token.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 void main() {
   final sampleJwt = '0.eyJzdWIiOiIxYzQyMWYwYy03ZmNlLTQ0MDEtOTVlYy' +

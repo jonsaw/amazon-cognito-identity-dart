@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:amazon_cognito_identity_dart/sig_v4_helper.dart';
+import 'package:amazon_cognito_identity_dart/sig_v4.dart';
 
 void main() {
   test('.buildCanonicalQueryString() builds valid query string', () {

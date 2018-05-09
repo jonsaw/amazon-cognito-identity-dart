@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'dart:convert';
-import 'package:amazon_cognito_identity_dart/cognito_user_attribute.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 void main() {
   test('.toString() returns a string representation of the record', () {

@@ -9,8 +9,7 @@ Please note that this package is _not_ production ready.
 __Use Case 1.__ Registering a user with the application. One needs to create a CognitoUserPool object by providing a UserPoolId and a ClientId and signing up by using a username, password, attribute list, and validation data.
 
 ```dart
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/attribute_arg.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 final userPool = new CognitoUserPool(
     'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -35,8 +34,7 @@ try {
 __Use case 2.__ Confirming a registered, unauthenticated user using a confirmation code received via SMS/email.
 
 ```dart
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 final userPool = new CognitoUserPool(
     'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -56,8 +54,7 @@ print(result);
 __Use case 3.__ Resending a confirmation code via SMS/email for confirming registration for unauthenticated users.
 
 ```dart
-import 'package:amazon_cognito_identity_dart/cognito_user.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 final userPool = new CognitoUserPool(
     'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -74,10 +71,7 @@ try {
 __Use case 4.__ Authenticating a user and establishing a user session with the Amazon Cognito Identity service.
 
 ```dart
-import 'package:amazon_cognito_identity_dart/cognito_user.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_session.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_exceptions.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 final userPool = new CognitoUserPool(
     'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -128,10 +122,7 @@ await cognitoUser.globalSignOut();
 Get a authenticated user's AWS Credentials. Use with other signing processes like [Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
 ```dart
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user.dart';
-import 'package:amazon_cognito_identity_dart/authentication_details.dart';
-import 'package:amazon_cognito_identity_dart/cognito_credentials.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 final userPool = new CognitoUserPool(
     'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
@@ -157,7 +148,8 @@ Signing requests for authenticated users for access to secured routes to API Gat
 
 ```dart
 import 'package:http/http.dart' as http;
-import 'package:amazon_cognito_identity_dart/sig_v4_helper.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'package:amazon_cognito_identity_dart/sig_v4.dart';
 
 final credentials = new CognitoCredentials(
     'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', userPool);
@@ -194,10 +186,7 @@ Persist user session using custom storage.
 
 ```dart
 import 'dart:convert';
-import 'package:amazon_cognito_identity_dart/storage_helper.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user_pool.dart';
-import 'package:amazon_cognito_identity_dart/authentication_details.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 Map<String, String> _storage = {};
 

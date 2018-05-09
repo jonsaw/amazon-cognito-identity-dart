@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:test/test.dart';
-import 'package:amazon_cognito_identity_dart/authentication_helper.dart';
+import 'package:amazon_cognito_identity_dart/src/authentication_helper.dart';
 
 void main() {
   test('constructor should generate valid k', () {

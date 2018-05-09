@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:amazon_cognito_identity_dart/client.dart';
-import 'package:amazon_cognito_identity_dart/storage_helper.dart';
-import 'package:amazon_cognito_identity_dart/attribute_arg.dart';
-import 'package:amazon_cognito_identity_dart/cognito_user.dart';
+import 'client.dart';
+import 'storage_helper.dart';
+import 'attribute_arg.dart';
+import 'cognito_user.dart';
 
 class CognitoUserPoolData {
   CognitoUser user;

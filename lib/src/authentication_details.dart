@@ -1,4 +1,4 @@
-import 'package:amazon_cognito_identity_dart/attribute_arg.dart';
+import 'attribute_arg.dart';
 
 class AuthenticationDetails {
   String username;

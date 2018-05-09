@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:amazon_cognito_identity_dart/date_helper.dart';
+import 'package:amazon_cognito_identity_dart/src/date_helper.dart';
 
 void main() {
   test('.getNowString() starts with short day', () {
