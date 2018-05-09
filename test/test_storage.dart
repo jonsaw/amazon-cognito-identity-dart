@@ -3,7 +3,7 @@ import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 Map<String, String> testStorage = {};
 
-class TestCustomStorage extends Storage {
+class TestCustomStorage extends CognitoStorage {
   String prefix;
   TestCustomStorage(this.prefix);
   setItem(String key, value) async {

@@ -2,14 +2,14 @@ import 'dart:async';
 
 Map<String, dynamic> _dataMemory = {};
 
-abstract class Storage {
+abstract class CognitoStorage {
   Future<dynamic> setItem(String key, value);
   Future<dynamic> getItem(String key);
   Future<dynamic> removeItem(String key);
   Future<void> clear();
 }
 
-class MemoryStorage extends Storage {
+class CognitoMemoryStorage extends CognitoStorage {
   setItem(String key, value) async {
     _dataMemory[key] = value;
     return _dataMemory[key];
@@ -31,9 +31,9 @@ class MemoryStorage extends Storage {
   }
 }
 
-class StorageHelper<S extends Storage> {
+class CognitoStorageHelper<S extends CognitoStorage> {
   S storage;
-  StorageHelper(this.storage);
+  CognitoStorageHelper(this.storage);
 
   S getStorage() {
     return this.storage;

@@ -11,7 +11,7 @@ import 'cognito_access_token.dart';
 import 'cognito_refresh_token.dart';
 import 'client.dart';
 import 'cognito_client_exceptions.dart';
-import 'storage_helper.dart';
+import 'cognito_storage.dart';
 import 'authentication_details.dart';
 import 'authentication_helper.dart';
 import 'date_helper.dart';
@@ -41,7 +41,7 @@ class CognitoUser {
   CognitoUserPool pool;
   Client client;
   String authenticationFlowType;
-  Storage storage;
+  CognitoStorage storage;
   CognitoUserSession _signInUserSession;
 
   CognitoUser(
@@ -53,7 +53,7 @@ class CognitoUser {
     authenticationFlowType = 'USER_SRP_AUTH';
 
     if (this.storage == null) {
-      this.storage = (new StorageHelper(new MemoryStorage())).getStorage();
+      this.storage = (new CognitoStorageHelper(new CognitoMemoryStorage())).getStorage();
     }
   }
 

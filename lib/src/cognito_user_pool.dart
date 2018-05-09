@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'client.dart';
-import 'storage_helper.dart';
 import 'attribute_arg.dart';
+import 'cognito_storage.dart';
 import 'cognito_user.dart';
 
 class CognitoUserPoolData {
@@ -17,7 +17,7 @@ class CognitoUserPool {
   String _region;
   bool advancedSecurityDataCollectionFlag;
   Client client;
-  Storage storage;
+  CognitoStorage storage;
 
   CognitoUserPool(
     String userPoolId,
@@ -37,7 +37,7 @@ class CognitoUserPool {
 
     if (this.storage == null) {
       this.storage =
-          storage = (new StorageHelper(new MemoryStorage())).getStorage();
+          storage = (new CognitoStorageHelper(new CognitoMemoryStorage())).getStorage();
     }
   }
 

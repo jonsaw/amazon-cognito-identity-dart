@@ -190,7 +190,7 @@ import 'package:amazon_cognito_identity_dart/cognito.dart';
 
 Map<String, String> _storage = {};
 
-class CustomStorage extends Storage {
+class CustomStorage extends CognitoStorage {
   String prefix;
   CustomStorage(this.prefix);
   // Write do storage file/DB
