@@ -1,3 +1,11 @@
+## 0.0.8
+
+- renamed `Storage` to `CognitoStorage`
+
+## 0.0.7
+
+- simplify package load to single entry point `cognito.dart`
+
 ## 0.0.6
 
 - Add signature v4 helper
