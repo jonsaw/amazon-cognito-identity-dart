@@ -58,8 +58,9 @@ void main() {
             '0f5de12dde74868c960c5cf249000e05f436ed5e5b28e5deaedbe2dde2f4ab5a'));
   });
   test('new SigV4Request generates signed headers and url', () {
+    const endpoint = 'https://api.inspire.my/dev';
     final awsSigV4Client = new AwsSigV4Client('AXXXXXXXXXXXXXXXXXXX',
-        '000000000000000000000000/000000000000000', 'https://api.inspire.my',
+        '000000000000000000000000/000000000000000', endpoint,
         sessionToken: 'session-token', region: 'ap-southeast-1');
     final signedRequest = new SigV4Request(awsSigV4Client,
         method: 'POST',
@@ -68,7 +69,10 @@ void main() {
             {'header-1': 'one', 'header-2': 'two'}),
         queryParams: new Map<String, String>.from({'tracking': 'x123'}),
         body: new Map<String, dynamic>.from({'color': 'blue'}));
-    expect(signedRequest.url, equals('https://api.inspire.my/projects?tracking=x123'));
-    expect(signedRequest.headers['Authorization'], startsWith('AWS4-HMAC-SHA256'));
+    expect(signedRequest.url, equals('${endpoint}/projects?tracking=x123'));
+    expect(
+        signedRequest.headers['Authorization'], startsWith('AWS4-HMAC-SHA256'));
+    signedRequest.method;
+    signedRequest.body;
   });
 }
