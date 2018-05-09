@@ -146,7 +146,6 @@ final session = await cognitoUser.authenticateUser(authDetails);
 final credentials = new CognitoCredentials(
     'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', userPool);
 await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
-
 print(credentials.accessKeyId);
 print(credentials.secretAccessKey);
 print(credentials.sessionToken);
@@ -164,9 +163,10 @@ final credentials = new CognitoCredentials(
     'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', userPool);
 await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
 
+const endpoint =
+    'https://xxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
 final awsSigV4Client = new AwsSigV4Client(credentials.accessKeyId,
-    credentials.secretAccessKey,
-    'https://xxxx.execute-api.ap-southeast-1.amazonaws.com/dev',
+    credentials.secretAccessKey, endpoint,
     sessionToken: credentials.sessionToken, region: 'ap-southeast-1');
 
 final signedRequest = new SigV4Request(awsSigV4Client,
@@ -177,12 +177,15 @@ final signedRequest = new SigV4Request(awsSigV4Client,
     queryParams: new Map<String, String>.from({'tracking': 'x123'}),
     body: new Map<String, dynamic>.from({'color': 'blue'}));
 
-final data = await http.post(
-  signedRequest.url,
-  headers: signedRequest.headers,
-  body: signedRequest.body,
-);
-print(data);
+http.Response response;
+try {
+  response = await http.post(
+      signedRequest.url,
+      headers: signedRequest.headers, body: signedRequest.body);
+} catch (e) {
+  print(e);
+}
+print(response.body);
 ```
 
 ### Use Custom Storage
