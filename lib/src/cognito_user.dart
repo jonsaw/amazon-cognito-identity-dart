@@ -887,4 +887,19 @@ class CognitoUser {
     });
     return attributeList;
   }
+
+  /**
+   * This is used by authenticated users to change a list of attributes
+   */
+  updateAttributes(List<CognitoUserAttribute> attributes) async {
+    if (_signInUserSession == null || !_signInUserSession.isValid()) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final Map<String, dynamic> paramsReq = {
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+      'UserAttributes': attributes,
+    };
+    await client.request('UpdateUserAttributes', paramsReq);
+  }
 }
