@@ -78,9 +78,7 @@ final userPool = new CognitoUserPool(
 final cognitoUser = new CognitoUser(
     'email@inspire.my', userPool);
 final authDetails = new AuthenticationDetails(
-  username: 'email@inspire.my',
-  password: 'Password001',
-);
+    username: 'email@inspire.my', password: 'Password001');
 CognitoUserSession session;
 try {
   session = await cognitoUser.authenticateUser(authDetails);
@@ -129,8 +127,7 @@ final userPool = new CognitoUserPool(
 final cognitoUser = new CognitoUser(
     'email@inspire.my', userPool);
 final authDetails = new AuthenticationDetails(
-  username: 'email@inspire.my',
-  password: 'Password001',
+    username: 'email@inspire.my', password: 'Password001'
 );
 final session = await cognitoUser.authenticateUser(authDetails);
 
@@ -224,9 +221,7 @@ final cognitoUser = new CognitoUser(
     'email@inspire.my', userPool,
     storage: customStore);
 final authDetails = new AuthenticationDetails(
-  username: 'email@inspire.my',
-  password: 'Password001',
-);
+    username: 'email@inspire.my', password: 'Password001');
 await cognitoUser.authenticateUser(authDetails);
 
 // some time later...
