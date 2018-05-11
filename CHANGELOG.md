@@ -1,3 +1,9 @@
+## 0.0.9
+
+- Add `getUserAttributes()` to CognitoUser
+- Add `updateAttributes()` to CognitoUser
+- Add `deleteAttributes()` to CognitoUser
+
 ## 0.0.8
 
 - renamed `Storage` to `CognitoStorage`
