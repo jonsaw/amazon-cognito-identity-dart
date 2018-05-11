@@ -53,7 +53,8 @@ class CognitoUser {
     authenticationFlowType = 'USER_SRP_AUTH';
 
     if (this.storage == null) {
-      this.storage = (new CognitoStorageHelper(new CognitoMemoryStorage())).getStorage();
+      this.storage =
+          (new CognitoStorageHelper(new CognitoMemoryStorage())).getStorage();
     }
   }
 
