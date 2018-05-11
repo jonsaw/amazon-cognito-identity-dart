@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'attribute_arg.dart';
+import 'cognito_user_attribute.dart';
 import 'cognito_user_exceptions.dart';
 import 'cognito_user_pool.dart';
 import 'cognito_user_session.dart';
@@ -860,5 +861,30 @@ class CognitoUser {
       storage.removeItem(randomPasswordKey),
       storage.removeItem(deviceGroupKeyKey),
     ]);
+  }
+
+  /**
+   * This is used by authenticated users to get a list of attributes
+   */
+  Future<List<CognitoUserAttribute>> getUserAttributes() async {
+    if (!(_signInUserSession != null && _signInUserSession.isValid())) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final Map<String, dynamic> paramsReq = {
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+    };
+    final userData = await client.request('GetUser', paramsReq);
+
+    if (userData['UserAttributes'] == null) {
+      return null;
+    }
+
+    final List<CognitoUserAttribute> attributeList = [];
+    userData['UserAttributes'].forEach((attr) {
+      attributeList.add(
+          new CognitoUserAttribute(name: attr['Name'], value: attr['Value']));
+    });
+    return attributeList;
   }
 }
