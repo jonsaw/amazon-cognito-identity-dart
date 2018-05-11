@@ -902,4 +902,19 @@ class CognitoUser {
     };
     await client.request('UpdateUserAttributes', paramsReq);
   }
+
+  /**
+   * This is used by an authenticated user to delete a list of attributes
+   */
+  deleteAttributes(List<String> attributeList) async {
+    if (!(_signInUserSession != null && _signInUserSession.isValid())) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final Map<String, dynamic> paramsReq = {
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+      'UserAttributeNames': attributeList,
+    };
+    await client.request('DeleteUserAttributes', paramsReq);
+  }
 }
