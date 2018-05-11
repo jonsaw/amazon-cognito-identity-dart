@@ -102,6 +102,44 @@ try {
 print(session.getAccessToken().getJwtToken());
 ```
 
+__Use case 5.__ Retrieve user attributes for authenticated users.
+
+```dart
+List<CognitoUserAttribute> attributes;
+try {
+  attributes = await cognitoUser.getUserAttributes();
+} catch (e) {
+  print(e);
+}
+attributes.forEach((attribute) {
+  print('attribute ${attribute.getName()} has value ${attribute.getValue()}');
+});
+```
+
+__Use case 7.__ Delete user attributes for authenticated users.
+
+```dart
+try {
+  final List<String> attributeList = ['nickname'];
+  cognitoUser.deleteAttributes(attributeList);
+} catch (e) {
+  print(e);
+}
+```
+
+__Use case 8.__ Update user attributes for authenticated users.
+
+```dart
+final List<CognitoUserAttribute> attributes = [];
+attributes.add(new CognitoUserAttribute(name: 'nickname', value: 'joe'));
+
+try {
+  await user.updateAttributes(attributes);
+} catch (e) {
+  print(e);
+}
+```
+
 __Use case 14.__ Signing out from the application.
 
 ```dart
