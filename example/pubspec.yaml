@@ -1,0 +1,16 @@
+name: secure_counter
+description: Example App for Amazon Cognito Identity SDK
+  for Dart
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^0.1.0
+  amazon_cognito_identity_dart: ^0.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
