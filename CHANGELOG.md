@@ -1,3 +1,7 @@
+## 0.0.9+1
+
+- [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
+
 ## 0.0.9
 
 - Add `getUserAttributes()` to CognitoUser
