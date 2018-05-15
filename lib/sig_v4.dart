@@ -14,6 +14,7 @@ const _default_accept_type = 'application/json';
 
 class AwsSigV4Client {
   String endpoint;
+  String pathComponent;
   String region;
   String accessKey;
   String secretKey;
@@ -21,12 +22,16 @@ class AwsSigV4Client {
   String serviceName;
   String defaultContentType;
   String defaultAcceptType;
-  AwsSigV4Client(this.accessKey, this.secretKey, this.endpoint,
+  AwsSigV4Client(this.accessKey, this.secretKey, String endpoint,
       {this.serviceName = 'execute-api',
       this.region = 'us-east-1',
       this.sessionToken,
       this.defaultContentType = _default_content_type,
-      this.defaultAcceptType = _default_accept_type});
+      this.defaultAcceptType = _default_accept_type}) {
+    final parsedUri = Uri.parse(endpoint);
+    this.endpoint = '${parsedUri.scheme}://${parsedUri.host}';
+    this.pathComponent = parsedUri.path;
+  }
 }
 
 class SigV4Request {
@@ -40,12 +45,14 @@ class SigV4Request {
   SigV4Request(
     this.awsSigV4Client, {
     String method,
-    this.path,
+    String path,
+    String datetime,
     this.queryParams,
     this.headers,
     dynamic body,
   }) {
     this.method = method.toUpperCase();
+    this.path = '${awsSigV4Client.pathComponent}${path}';
     if (headers == null) {
       headers = {};
     }
@@ -63,7 +70,9 @@ class SigV4Request {
     if (body == '') {
       headers.remove('Content-Type');
     }
-    final datetime = _generateDatetime();
+    if (datetime == null) {
+      datetime = _generateDatetime();
+    }
     headers[_x_amz_date] = datetime;
     final endpointUri = Uri.parse(awsSigV4Client.endpoint);
     headers[_host] = endpointUri.host;
@@ -112,7 +121,7 @@ class SigV4Request {
     return new DateTime.now()
         .toUtc()
         .toString()
-        .replaceAll(new RegExp(r'\.\d{3}Z$'), 'Z')
+        .replaceAll(new RegExp(r'\.\d*Z$'), 'Z')
         .replaceAll(new RegExp(r'[:-]|\.\d{3}'), '')
         .split(' ')
         .join('T');
@@ -120,22 +129,22 @@ class SigV4Request {
 }
 
 class SigV4 {
-  List<int> _hash(List<int> value) {
+  List<int> hash(List<int> value) {
     return sha256.convert(value).bytes;
   }
 
-  String _hexEncode(List<int> value) {
+  String hexEncode(List<int> value) {
     return hex.encode(value);
   }
 
-  List<int> _hmac(List<int> secret, List<int> value) {
-    Hmac hmac = new Hmac(sha256, secret);
-    Digest dig = hmac.convert(value);
+  List<int> sign(List<int> key, String message) {
+    Hmac hmac = new Hmac(sha256, key);
+    Digest dig = hmac.convert(utf8.encode(message));
     return dig.bytes;
   }
 
   String hashCanonicalRequest(request) {
-    return _hexEncode(utf8.encode(request));
+    return hexEncode(hash(utf8.encode(request)));
   }
 
   String buildCanonicalUri(String uri) {
@@ -203,15 +212,15 @@ class SigV4 {
       Map<String, String> queryParams,
       Map<String, String> headers,
       String payload) {
-    List<String> canonicalRequet = [
+    List<String> canonicalRequest = [
       method,
       buildCanonicalUri(path),
       buildCanonicalQueryString(queryParams),
       buildCanonicalHeaders(headers),
       buildCanonicalSignedHeaders(headers),
-      _hexEncode(_hash(utf8.encode(payload))),
+      hexEncode(hash(utf8.encode(payload))),
     ];
-    return canonicalRequet.join('\n');
+    return canonicalRequest.join('\n');
   }
 
   String buildAuthorizationHeader(String accessKey, String credentialScope,
@@ -229,17 +238,17 @@ class SigV4 {
 
   List<int> calculateSigningKey(
       String secretKey, String datetime, String region, String service) {
-    return _hmac(
-        _hmac(
-            _hmac(
-                _hmac(utf8.encode('${_aws4}${secretKey}'),
-                    utf8.encode(datetime.substring(0, 8))),
-                utf8.encode(region)),
-            utf8.encode(service)),
-        utf8.encode(_aws4_request));
+    return sign(
+        sign(
+            sign(
+                sign(utf8.encode('${_aws4}${secretKey}'),
+                    datetime.substring(0, 8)),
+                region),
+            service),
+        _aws4_request);
   }
 
   String calculateSignature(List<int> signingKey, String stringToSign) {
-    return _hexEncode(_hmac(signingKey, utf8.encode(stringToSign)));
+    return hexEncode(sign(signingKey, stringToSign));
   }
 }
