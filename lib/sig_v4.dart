@@ -187,7 +187,7 @@ class SigV4 {
     return canonicalHeaders;
   }
 
-  buildCanonicalSignedHeaders(Map<String, String> headers) {
+  String buildCanonicalSignedHeaders(Map<String, String> headers) {
     final List<String> sortedKeys = [];
     headers.forEach((property, _) {
       sortedKeys.add(property.toLowerCase());
