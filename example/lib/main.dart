@@ -1,10 +1,17 @@
 import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'package:amazon_cognito_identity_dart/sig_v4.dart';
 
 // Setup AWS User Pool Id & Client Id settings here:
 const _awsUserPoolId = 'ap-southeast-1_xxxxxxxxx';
 const _awsClientId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+const _identityPoolId = 'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+
+// Setup endpoints here
+const _endpoint = 'https://xxxxxxxxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
 
 final userPool = new CognitoUserPool(_awsUserPoolId, _awsClientId);
 
@@ -153,6 +160,23 @@ class User {
     }
     _isAuthenticated = true;
     return 'Successfully logged in!';
+  }
+}
+
+class Counter {
+  int count;
+  getCount() async {
+    final credentials = await new User().getCredentials();
+    if (credentials == null) {
+      return null;
+    }
+    final awsSigV4Client = new AwsSigV4Client(credentials.accessKeyId,
+      credentials.secretAccessKey, _endpoint,
+      sessionToken: credentials.sessionToken, region: 'ap-southeast-1');
+    final signedRequest = new SigV4Request(awsSigV4Client,
+        method: 'GET', path: '/counter');
+    final response = await http.get(signedRequest.url, headers: signedRequest.headers);
+    print(response.body);
   }
 }
 
