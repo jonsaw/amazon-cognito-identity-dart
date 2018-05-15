@@ -1,3 +1,7 @@
+## 0.0.10
+
+- Fix SigV4 signature error
+
 ## 0.0.9+1
 
 - [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
