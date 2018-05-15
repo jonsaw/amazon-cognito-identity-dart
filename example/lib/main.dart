@@ -11,11 +11,11 @@ final userPool = new CognitoUserPool(_awsUserPoolId, _awsClientId);
 void main() => runApp(new SecureCounterApp());
 
 class User {
+  bool _isAuthenticated = false;
   String name = '';
   String email = '';
   String password = '';
   bool userConfirmed = false;
-  bool isAuthenticated = false;
 
   getUserAttributes() async {
     List<CognitoUserAttribute> attributes;
@@ -33,22 +33,33 @@ class User {
     }
   }
 
-  Future<bool> authenticated() async {
+  Future<bool> getIsAuthenticated() async {
     CognitoUserSession session;
+    _isAuthenticated = false;
     try {
       final cognitoUser = await userPool.getCurrentUser();
       if (cognitoUser == null) {
-        return false;
+        return _isAuthenticated;
       }
       session = await cognitoUser.getSession();
     } catch (e) {
-      throw e;
+      return _isAuthenticated;
     }
-    isAuthenticated = false;
     if (session.isValid()) {
-      isAuthenticated = true;
+      _isAuthenticated = true;
     }
-    return isAuthenticated;
+    return _isAuthenticated;
+  }
+
+  Future<CognitoCredentials> getCredentials() async {
+    final credentials = new CognitoCredentials(_identityPoolId, userPool);
+    final cognitoUser = await userPool.getCurrentUser();
+    if (cognitoUser == null) {
+      return null;
+    }
+    final session = await cognitoUser.getSession();
+    await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
+    return credentials;
   }
 
   Future<String> signUp() async {
@@ -140,7 +151,7 @@ class User {
     if (!session.isValid()) {
       return 'Invalid login';
     }
-    isAuthenticated = true;
+    _isAuthenticated = true;
     return 'Successfully logged in!';
   }
 }
@@ -540,8 +551,8 @@ class _LoginScreenState extends State<LoginScreen> {
       content: new Text(message),
       action: new SnackBarAction(
         label: 'OK',
-        onPressed: () {
-          if (userData.isAuthenticated) {
+        onPressed: () async {
+          if (await userData.getIsAuthenticated()) {
             Navigator.pop(context);
           }
         },
@@ -625,6 +636,7 @@ class SecureCounterScreen extends StatefulWidget {
 
 class _SecureCounterScreenState extends State<SecureCounterScreen> {
   int _counter = 0;
+  bool isAuthenticated = false;
 
   void _incrementCounter() {
     setState(() {
@@ -632,15 +644,15 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
     });
   }
 
-  Future<User> _getAuthenticatedUser() async {
+  Future<User> _getValues() async {
     final user = new User();
 
     try {
-      await user.authenticated();
+      isAuthenticated = await user.getIsAuthenticated();
     } catch (e) {
       return null;
     }
-    if (user.isAuthenticated) {
+    if (isAuthenticated) {
       await user.getUserAttributes();
       return user;
     }
@@ -650,10 +662,10 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
   @override
   Widget build(BuildContext context) {
     return new FutureBuilder(
-      future: _getAuthenticatedUser(),
+      future: _getValues(),
       builder: (context, AsyncSnapshot<User> snapshot) {
         if (snapshot.hasData) {
-          if (!snapshot.data.isAuthenticated) {
+          if (!isAuthenticated) {
             return new LoginScreen();
           }
 
