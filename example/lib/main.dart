@@ -131,7 +131,8 @@ class User {
     } on CognitoClientException catch (e) {
       if (e.code == 'InvalidParameterException' ||
           e.code == 'UserNotConfirmedException' ||
-          e.code == 'NotAuthorizedException') {
+          e.code == 'NotAuthorizedException' ||
+          e.code == 'UserNotFoundException') {
         return e.message;
       }
       throw e;
