@@ -6,6 +6,8 @@ An example Flutter project for [Amazon Cognito Identity Dart](https://github.com
   <img title="Cognito Dart Demo screenshot" src="https://user-images.githubusercontent.com/1572333/39953217-77967bda-55d9-11e8-940c-90c34f870cb6.png" height="400px">
 </p>
 
+See [Example Secure Counter Server](https://github.com/jonsaw/example-secure-counter-server) for sample API implementation.
+
 ### Sign Up
 
 <p align="center">
