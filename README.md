@@ -22,12 +22,8 @@ final userAttributes = [
 
 var data;
 try {
-  data = await userPool.signUp(
-    'email@inspire.my',
-    'Password001',
-
-    userAttributes: userAttributes, // ..optional
-  );
+  data = await userPool.signUp('email@inspire.my', 'Password001',
+      userAttributes: userAttributes);
 } catch (e) {
   print(e);
 }
@@ -335,24 +331,28 @@ Map<String, String> _storage = {};
 class CustomStorage extends CognitoStorage {
   String prefix;
   CustomStorage(this.prefix);
-  // Write do storage file/DB
-  setItem(String key, value) async {
+
+  @override
+  Future setItem(String key, value) async {
     _storage[prefix+key] = json.encode(value);
     return _storage[prefix+key];
   }
-  // Read from storage file/DB
-  getItem(String key) async {
+
+  @override
+  Future getItem(String key) async {
     if (_storage[prefix+key] != null) {
       return json.decode(_storage[prefix+key]);
     }
     return null;
   }
-  // Remove from storage file/DB
-  removeItem(String key) async {
+
+  @override
+  Future removeItem(String key) async {
     return _storage.remove(prefix+key);
   }
-  // Clear completely
-  clear() async {
+
+  @override
+  Future<void> clear() async {
     _storage = {};
   }
 }
