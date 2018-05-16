@@ -1,3 +1,7 @@
+## 0.0.10+1
+
+- Updated [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) with Signed Requests to Lambda.
+
 ## 0.0.10
 
 - Fix SigV4 signature error
