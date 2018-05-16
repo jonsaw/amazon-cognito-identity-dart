@@ -116,6 +116,29 @@ attributes.forEach((attribute) {
 });
 ```
 
+__Use case 6.__ Verify user attribute for an authenticated user.
+
+```dart
+var data;
+try {
+  data = await cognitoUser.getAttributeVerificationCode('email');
+} catch {
+  print(e);
+}
+print(data);
+
+// obtain verification code...
+
+bool attributeVerified = false;
+try {
+  attributeVerified = await cognitoUser.verifyAttribute(
+      'email', '123456');
+} catch (e) {
+  print(e);
+}
+print(attributeVerified);
+```
+
 __Use case 7.__ Delete user attributes for authenticated users.
 
 ```dart
@@ -212,6 +235,7 @@ __Use case 14.__ Signing out from the application.
 ```dart
 await cognitoUser.signOut();
 ```
+
 __Use case 15.__ Global signout for authenticated users (invalidates all issued tokens).
 
 ```dart
