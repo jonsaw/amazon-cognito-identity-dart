@@ -152,6 +152,35 @@ try {
 print(passwordChanged);
 ```
 
+__Use case 12.__ Starting and completing a forgot password flow for an unauthenticated user.
+
+```dart
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+
+final userPool = new CognitoUserPool(
+    'ap-southeast-1_xxxxxxxxx', 'xxxxxxxxxxxxxxxxxxxxxxxxxx');
+final cognitoUser = new CognitoUser(
+    'email@inspire.my', userPool);
+
+var data;
+try {
+  data = await cognitoUser.forgotPassword();
+} catch (e) {
+  print(e);
+}
+print('Code sent to $data');
+
+// prompt user for verification input...
+
+bool passwordConfirmed = false;
+try {
+  passwordConfirmed = await cognitoUser.confirmPassword('123456', 'newPassword');
+} catch (e) {
+  print(e);
+}
+print(passwordConfirmed);
+```
+
 __Use case 14.__ Signing out from the application.
 
 ```dart
