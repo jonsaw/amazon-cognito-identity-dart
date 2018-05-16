@@ -621,7 +621,7 @@ class CognitoUser {
   /**
    * This is used for a certain user to confirm the registration by using a confirmation code
    */
-  Future<String> confirmRegistration(String confirmationCode,
+  Future<bool> confirmRegistration(String confirmationCode,
       [bool forceAliasCreation = false]) async {
     Map<String, dynamic> params = {
       'ClientId': pool.getClientId(),
@@ -635,7 +635,7 @@ class CognitoUser {
     }
 
     await client.request('ConfirmSignUp', params);
-    return 'SUCCESS';
+    return true;
   }
 
   /**
@@ -772,7 +772,7 @@ class CognitoUser {
   /**
    * This is used by an authenticated user to change the current password
    */
-  Future<String> changePassword(
+  Future<bool> changePassword(
       String oldUserPassword, String newUserPassword) async {
     if (!(_signInUserSession != null && _signInUserSession.isValid())) {
       throw new Exception('User is not authenticated');
@@ -785,7 +785,7 @@ class CognitoUser {
     };
 
     await client.request('ChangePassword', paramsReq);
-    return 'SUCCESS';
+    return true;
   }
 
   /**

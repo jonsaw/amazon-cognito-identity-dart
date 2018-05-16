@@ -42,13 +42,13 @@ final userPool = new CognitoUserPool(
 final cognitoUser = new CognitoUser(
     'email@inspire.my', userPool);
 
-var result;
+bool registrationConfirmed = false;
 try {
-  result = await cognitoUser.confirmRegistration('123456');
+  registrationConfirmed = await cognitoUser.confirmRegistration('123456');
 } catch (e) {
   print(e);
 }
-print(result);
+print(registrationConfirmed);
 ```
 
 __Use case 3.__ Resending a confirmation code via SMS/email for confirming registration for unauthenticated users.
