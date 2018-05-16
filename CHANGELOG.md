@@ -1,3 +1,7 @@
+## 0.0.11
+
+- Store expiry time in Cognito Credentials instance
+
 ## 0.0.10+1
 
 - Updated [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) with Signed Requests to Lambda.
