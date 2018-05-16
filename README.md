@@ -145,7 +145,8 @@ __Use case 11.__ Changing the current password for authenticated users.
 ```dart
 bool passwordChanged = false;
 try {
-  passwordChanged = await cognitoUser.changePassword('oldPassword', 'newPassword');
+  passwordChanged = await cognitoUser.changePassword(
+      'oldPassword', 'newPassword');
 } catch (e) {
   print(e);
 }
@@ -174,7 +175,8 @@ print('Code sent to $data');
 
 bool passwordConfirmed = false;
 try {
-  passwordConfirmed = await cognitoUser.confirmPassword('123456', 'newPassword');
+  passwordConfirmed = await cognitoUser.confirmPassword(
+      '123456', 'newPassword');
 } catch (e) {
   print(e);
 }
