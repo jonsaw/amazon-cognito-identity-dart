@@ -804,6 +804,24 @@ class CognitoUser {
   }
 
   /**
+   * This is used to confirm a new password using a confirmation code
+   */
+  Future<bool> confirmPassword(String confirmationCode, String newPassword) async {
+    final Map<String, String> paramsReq = {
+      'ClientId': pool.getClientId(),
+      'Username': username,
+      'ConfirmationCode': confirmationCode,
+      'Password': newPassword,
+    };
+    if (getUserContextData() != null) {
+      paramsReq['UserContextData'] = getUserContextData();
+    }
+
+    await client.request('ConfirmForgotPassword', paramsReq);
+    return true;
+  }
+
+  /**
    * This is used to save the session tokens to local storage
    */
   void cacheTokens() async {
