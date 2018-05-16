@@ -813,6 +813,25 @@ class CognitoUser {
   }
 
   /**
+   * This is used by an authenticated user to disable MFA for him/herself
+   */
+  Future<bool> disableMfa() async {
+    if (_signInUserSession == null || !_signInUserSession.isValid()) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final List<Map<String, String>> mfaOptions = [];
+
+    final Map<String, dynamic> paramsReq = {
+      'MFAOptions': mfaOptions,
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+    };
+
+    await client.request('SetUserSettings', paramsReq);
+    return true;
+  }
+
+  /**
    * This is used to initiate a forgot password request
    */
   Future forgotPassword() async {
