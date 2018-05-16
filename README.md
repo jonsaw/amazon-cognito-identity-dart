@@ -134,10 +134,22 @@ final List<CognitoUserAttribute> attributes = [];
 attributes.add(new CognitoUserAttribute(name: 'nickname', value: 'joe'));
 
 try {
-  await user.updateAttributes(attributes);
+  await cognitoUser.updateAttributes(attributes);
 } catch (e) {
   print(e);
 }
+```
+
+__Use case 9.__ Enabling MFA for a user on a pool that has an optional MFA setting for authenticated users.
+
+```dart
+bool mfaEnabled = false;
+try {
+  mfaEnabled = await cognitoUser.enableMfa();
+} catch (e) {
+  print(e);
+}
+print(mfaEnabled);
 ```
 
 __Use case 11.__ Changing the current password for authenticated users.
