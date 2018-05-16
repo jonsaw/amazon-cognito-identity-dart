@@ -220,6 +220,24 @@ class CognitoUser {
   }
 
   /**
+   * This is used to confirm an attribute using a confirmation code
+   */
+  Future<bool> verifyAttribute(attributeName, confirmationCode) async {
+    if (_signInUserSession == null || !_signInUserSession.isValid()) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final Map<String, String> paramsReq = {
+      'AttributeName': attributeName,
+      'Code': confirmationCode,
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+    };
+
+    await client.request('VerifyUserAttribute', paramsReq);
+    return true;
+  }
+
+  /**
    * This uses the refreshToken to retrieve a new session
    */
   Future<CognitoUserSession> refreshSession(
