@@ -1,10 +1,14 @@
+## 0.0.11+1
+
+- Updated [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) with persisted login sessions
+
 ## 0.0.11
 
 - Store expiry time in Cognito Credentials instance
 
 ## 0.0.10+1
 
-- Updated [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) with Signed Requests to Lambda.
+- Updated [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) with Signed Requests to Lambda
 
 ## 0.0.10
 
@@ -12,7 +16,7 @@
 
 ## 0.0.9+1
 
-- [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
+- Added [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example)
 
 ## 0.0.9
 
