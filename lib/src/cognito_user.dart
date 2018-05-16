@@ -789,6 +789,21 @@ class CognitoUser {
   }
 
   /**
+   * This is used to initiate a forgot password request
+   */
+  Future forgotPassword() async {
+    final Map<String, String> paramsReq = {
+      'ClientId': pool.getClientId(),
+      'Username': username,
+    };
+    if (getUserContextData() != null) {
+      paramsReq['UserContextData'] = getUserContextData();
+    }
+
+    return await client.request('ForgotPassword', paramsReq);
+  }
+
+  /**
    * This is used to save the session tokens to local storage
    */
   void cacheTokens() async {
