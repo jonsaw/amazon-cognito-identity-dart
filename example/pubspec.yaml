@@ -5,8 +5,8 @@ description: Example App for Amazon Cognito Identity SDK
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^0.1.0
-  amazon_cognito_identity_dart: ^0.0.10
+  cupertino_icons: "^0.1.0"
+  amazon_cognito_identity_dart: "^0.0.11"
   shared_preferences: "^0.4.1"
 
 dev_dependencies:
