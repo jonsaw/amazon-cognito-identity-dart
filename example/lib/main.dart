@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'package:amazon_cognito_identity_dart/sig_v4.dart';
 
@@ -68,6 +69,43 @@ class CounterService {
   }
 }
 
+class Storage extends CognitoStorage {
+  SharedPreferences _prefs;
+  Storage(this._prefs);
+
+  @override
+  Future getItem(String key) async {
+    String item;
+    try {
+      item = json.decode(_prefs.getString(key));
+    } catch (e) {
+      return null;
+    }
+    return item;
+  }
+
+  @override
+  Future setItem(String key, value) async {
+    _prefs.setString(key, json.encode(value));
+    return getItem(key);
+  }
+
+  @override
+  Future removeItem(String key) async {
+    final item = getItem(key);
+    if (item != null) {
+      _prefs.remove(key);
+      return item;
+    }
+    return null;
+  }
+
+  @override
+  Future<void> clear() async {
+    _prefs.clear();
+  }
+}
+
 class UserService {
   CognitoUserPool _userPool;
   CognitoUser _cognitoUser;
@@ -75,6 +113,10 @@ class UserService {
   UserService(this._userPool);
 
   Future<bool> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storage = new Storage(prefs);
+    _userPool.storage = storage;
+
     _cognitoUser = await _userPool.getCurrentUser();
     if (_cognitoUser == null) {
       return false;
@@ -109,7 +151,9 @@ class UserService {
   }
 
   Future<User> login(String email, String password) async {
-    _cognitoUser = new CognitoUser(email, _userPool);
+    _cognitoUser =
+        new CognitoUser(email, _userPool, storage: _userPool.storage);
+
     final authDetails = new AuthenticationDetails(
       username: email,
       password: password,
@@ -139,7 +183,8 @@ class UserService {
   }
 
   Future<bool> confirmAccount(String email, String confirmationCode) async {
-    _cognitoUser = new CognitoUser(email, _userPool);
+    _cognitoUser =
+        new CognitoUser(email, _userPool, storage: _userPool.storage);
 
     final result = await _cognitoUser.confirmRegistration(confirmationCode);
     if (result == 'SUCCESS') {
@@ -150,7 +195,8 @@ class UserService {
   }
 
   Future<void> resendConfirmationCode(String email) async {
-    _cognitoUser = new CognitoUser(email, _userPool);
+    _cognitoUser =
+        new CognitoUser(email, _userPool, storage: _userPool.storage);
     await _cognitoUser.resendConfirmationCode();
   }
 
@@ -601,6 +647,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final _userService = new UserService(userPool);
   User _user = new User();
+  bool _isAuthenticated = false;
+
+  Future<UserService> _getValues() async {
+    await _userService.init();
+    _isAuthenticated = await _userService.checkAuthenticated();
+    return _userService;
+  }
 
   submit(BuildContext context) async {
     _formKey.currentState.save();
@@ -648,64 +701,77 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Login'),
-      ),
-      body: new Builder(
-        builder: (BuildContext context) {
-          return new Container(
-            child: new Form(
-              key: _formKey,
-              child: new ListView(
-                children: <Widget>[
-                  new ListTile(
-                    leading: const Icon(Icons.email),
-                    title: new TextFormField(
-                      initialValue: widget.email,
-                      decoration: new InputDecoration(
-                          hintText: 'example@inspire.my', labelText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      onSaved: (String email) {
-                        _user.email = email;
-                      },
-                    ),
-                  ),
-                  new ListTile(
-                    leading: const Icon(Icons.lock),
-                    title: new TextFormField(
-                      decoration: new InputDecoration(labelText: 'Password'),
-                      obscureText: true,
-                      onSaved: (String password) {
-                        _user.password = password;
-                      },
-                    ),
-                  ),
-                  new Container(
-                    padding: new EdgeInsets.all(20.0),
-                    width: screenSize.width,
-                    child: new RaisedButton(
-                      child: new Text(
-                        'Login',
-                        style: new TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        submit(context);
-                      },
-                      color: Colors.blue,
-                    ),
-                    margin: new EdgeInsets.only(
-                      top: 10.0,
-                    ),
-                  ),
-                ],
+    return new FutureBuilder(
+        future: _getValues(),
+        builder: (context, AsyncSnapshot<UserService> snapshot) {
+          if (snapshot.hasData) {
+            if (_isAuthenticated) {
+              return new SecureCounterScreen();
+            }
+            final Size screenSize = MediaQuery.of(context).size;
+            return new Scaffold(
+              appBar: new AppBar(
+                title: new Text('Login'),
               ),
-            ),
-          );
-        },
-      ),
-    );
+              body: new Builder(
+                builder: (BuildContext context) {
+                  return new Container(
+                    child: new Form(
+                      key: _formKey,
+                      child: new ListView(
+                        children: <Widget>[
+                          new ListTile(
+                            leading: const Icon(Icons.email),
+                            title: new TextFormField(
+                              initialValue: widget.email,
+                              decoration: new InputDecoration(
+                                  hintText: 'example@inspire.my',
+                                  labelText: 'Email'),
+                              keyboardType: TextInputType.emailAddress,
+                              onSaved: (String email) {
+                                _user.email = email;
+                              },
+                            ),
+                          ),
+                          new ListTile(
+                            leading: const Icon(Icons.lock),
+                            title: new TextFormField(
+                              decoration:
+                                  new InputDecoration(labelText: 'Password'),
+                              obscureText: true,
+                              onSaved: (String password) {
+                                _user.password = password;
+                              },
+                            ),
+                          ),
+                          new Container(
+                            padding: new EdgeInsets.all(20.0),
+                            width: screenSize.width,
+                            child: new RaisedButton(
+                              child: new Text(
+                                'Login',
+                                style: new TextStyle(color: Colors.white),
+                              ),
+                              onPressed: () {
+                                submit(context);
+                              },
+                              color: Colors.blue,
+                            ),
+                            margin: new EdgeInsets.only(
+                              top: 10.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+          return new Scaffold(
+              appBar: new AppBar(title: new Text('Loading...')));
+        });
   }
 }
 
