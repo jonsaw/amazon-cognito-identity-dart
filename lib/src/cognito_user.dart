@@ -789,6 +789,30 @@ class CognitoUser {
   }
 
   /**
+   * This is used by authenticated users to enable MFA for him/herself
+   */
+  Future<bool> enableMfa() async {
+    if (_signInUserSession == null || !_signInUserSession.isValid()) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final List<Map<String, String>> mfaOptions = [];
+    final Map<String, String> mfaEnabled = {
+      'DeliveryMedium': 'SMS',
+      'AttributeName': 'phone_number',
+    };
+    mfaOptions.add(mfaEnabled);
+
+    final Map<String, dynamic> paramsReq = {
+      'MFAOptions': mfaOptions,
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+    };
+
+    await client.request('SetUserSettings', paramsReq);
+    return true;
+  }
+
+  /**
    * This is used to initiate a forgot password request
    */
   Future forgotPassword() async {
