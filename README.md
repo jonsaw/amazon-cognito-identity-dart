@@ -140,6 +140,18 @@ try {
 }
 ```
 
+__Use case 11.__ Changing the current password for authenticated users.
+
+```dart
+bool passwordChanged = false;
+try {
+  passwordChanged = await cognitoUser.changePassword('oldPassword', 'newPassword');
+} catch (e) {
+  print(e);
+}
+print(passwordChanged);
+```
+
 __Use case 14.__ Signing out from the application.
 
 ```dart
