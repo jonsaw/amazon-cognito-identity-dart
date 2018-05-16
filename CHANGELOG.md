@@ -1,3 +1,14 @@
+## 0.0.12
+
+- Use bool `true` to represent 'SUCCESS'
+- Add `forgotPassword()` to CognitoUser
+- Add `confirmPassword()` to CognitoUser
+- Add `enableMfa()` to CognitoUser
+- Add `disableMfa()` to CognitoUser
+- Add `getAttributeVerificationCode()` to CognitoUser
+- Add `verifyAttribute()` to CognitoUser
+- Add `deleteUser()` to CognitoUser
+
 ## 0.0.11+1
 
 - Updated [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) with persisted login sessions
