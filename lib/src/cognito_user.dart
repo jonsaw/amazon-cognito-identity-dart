@@ -232,8 +232,8 @@ class CognitoUser {
       'Code': confirmationCode,
       'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
     };
-
     await client.request('VerifyUserAttribute', paramsReq);
+
     return true;
   }
 
@@ -681,6 +681,7 @@ class CognitoUser {
       'Username': username,
     };
     var data = await client.request('ResendConfirmationCode', params);
+
     return data;
   }
 
@@ -817,8 +818,8 @@ class CognitoUser {
       'ProposedPassword': newUserPassword,
       'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
     };
-
     await client.request('ChangePassword', paramsReq);
+
     return true;
   }
 
@@ -1026,5 +1027,22 @@ class CognitoUser {
       'UserAttributeNames': attributeList,
     };
     await client.request('DeleteUserAttributes', paramsReq);
+  }
+
+  /**
+   * This is used by an authenticated user to delete him/herself
+   */
+  Future<bool> deleteUser() async {
+    if (_signInUserSession == null || !_signInUserSession.isValid()) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final Map<String, dynamic> paramsReq = {
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+    };
+    await client.request('DeleteUser', paramsReq);
+    await clearCachedTokens();
+
+    return true;
   }
 }
