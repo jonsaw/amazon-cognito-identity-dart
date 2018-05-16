@@ -152,6 +152,18 @@ try {
 print(mfaEnabled);
 ```
 
+__Use case 10.__ Disabling MFA for a user on a pool that has an optional MFA setting for authenticated users.
+
+```dart
+bool mfaDisabled = false;
+try {
+  mfaDisabled = await cognitoUser.disableMfa();
+} catch (e) {
+  print(e);
+}
+print(mfaDisabled);
+```
+
 __Use case 11.__ Changing the current password for authenticated users.
 
 ```dart
