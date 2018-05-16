@@ -1,7 +1,9 @@
 # Amazon Cognito Identity SDK for Dart
-Unofficial Amazon Cognito Identity SDK written in Dart for Dart.
+Unofficial Amazon Cognito Identity SDK written in Dart for [Dart](https://www.dartlang.org/).
 
-Rewrite of [amazon-cognito-identity-js](https://github.com/aws/aws-amplify/tree/master/packages/amazon-cognito-identity-js) in [Dart](https://www.dartlang.org/).
+Based on [amazon-cognito-identity-js](https://github.com/aws/aws-amplify/tree/master/packages/amazon-cognito-identity-js).
+
+Example Flutter app can be found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
 
 Please note that this package is _not_ production ready.
 
@@ -321,6 +323,8 @@ print(response.body);
 ### Use Custom Storage
 
 Persist user session using custom storage.
+
+[Shared Preferences Plugin](https://pub.dartlang.org/packages/shared_preferences) storage example found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/blob/master/example/lib/main.dart#L72).
 
 ```dart
 import 'dart:convert';
