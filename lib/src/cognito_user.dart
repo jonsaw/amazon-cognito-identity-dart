@@ -204,6 +204,22 @@ class CognitoUser {
   }
 
   /**
+   * This is used to initiate an attribute confirmation request
+   */
+  Future getAttributeVerificationCode(String attributeName) async {
+    if (_signInUserSession == null || !_signInUserSession.isValid()) {
+      throw new Exception('User is not authenticated');
+    }
+
+    final Map<String, String> paramsReq = {
+      'AttributeName': attributeName,
+      'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
+    };
+
+    return await client.request('GetUserAttributeVerificationCode', paramsReq);
+  }
+
+  /**
    * This uses the refreshToken to retrieve a new session
    */
   Future<CognitoUserSession> refreshSession(
