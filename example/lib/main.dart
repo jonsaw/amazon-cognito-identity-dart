@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:amazon_cognito_identity_dart/cognito.dart';
@@ -11,174 +12,179 @@ const _awsClientId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
 const _identityPoolId = 'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
 
 // Setup endpoints here
-const _endpoint = 'https://xxxxxxxxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
+const _region = 'ap-southeast-1';
+const _endpoint =
+    'https://xxxxxxxxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
 
 final userPool = new CognitoUserPool(_awsUserPoolId, _awsClientId);
 
-void main() => runApp(new SecureCounterApp());
+class Counter {
+  int count;
+  Counter(this.count);
+
+  static Counter fromJson(json) {
+    return new Counter(json['count']);
+  }
+}
 
 class User {
-  bool _isAuthenticated = false;
-  String name = '';
-  String email = '';
-  String password = '';
-  bool userConfirmed = false;
+  String email;
+  String name;
+  String password;
+  bool confirmed = false;
+  bool hasAccess = false;
 
-  getUserAttributes() async {
-    List<CognitoUserAttribute> attributes;
-    final user = await userPool.getCurrentUser();
-    await user.getSession();
-    attributes = await user.getUserAttributes();
-    if (attributes != null) {
-      attributes.forEach((attribute) {
-        if (attribute.getName() == 'email') {
-          email = attribute.getValue();
-        } else if (attribute.getName() == 'name') {
-          name = attribute.getValue();
-        }
-      });
-    }
+  static User fromUserAttributes(List<CognitoUserAttribute> attributes) {
+    final user = new User();
+    attributes.forEach((attribute) {
+      if (attribute.getName() == 'email') {
+        user.email = attribute.getValue();
+      } else if (attribute.getName() == 'name') {
+        user.name = attribute.getValue();
+      }
+    });
+    return user;
+  }
+}
+
+class CounterService {
+  AwsSigV4Client awsSigV4Client;
+  CounterService(this.awsSigV4Client);
+
+  Future<Counter> getCounter() async {
+    final signedRequest =
+        new SigV4Request(awsSigV4Client, method: 'GET', path: '/counter');
+    final response =
+        await http.get(signedRequest.url, headers: signedRequest.headers);
+    return Counter.fromJson(json.decode(response.body));
   }
 
-  Future<bool> getIsAuthenticated() async {
-    CognitoUserSession session;
-    _isAuthenticated = false;
-    try {
-      final cognitoUser = await userPool.getCurrentUser();
-      if (cognitoUser == null) {
-        return _isAuthenticated;
-      }
-      session = await cognitoUser.getSession();
-    } catch (e) {
-      return _isAuthenticated;
+  Future<Counter> incrementCounter() async {
+    final signedRequest =
+        new SigV4Request(awsSigV4Client, method: 'PUT', path: '/counter');
+    final response =
+        await http.put(signedRequest.url, headers: signedRequest.headers);
+    return Counter.fromJson(json.decode(response.body));
+  }
+}
+
+class UserService {
+  CognitoUserPool _userPool;
+  CognitoUser _cognitoUser;
+  CognitoUserSession _session;
+  UserService(this._userPool);
+
+  Future<bool> init() async {
+    _cognitoUser = await _userPool.getCurrentUser();
+    if (_cognitoUser == null) {
+      return false;
     }
-    if (session.isValid()) {
-      _isAuthenticated = true;
+    _session = await _cognitoUser.getSession();
+    return _session.isValid();
+  }
+
+  Future<User> getCurrentUser() async {
+    if (_cognitoUser == null || _session == null) {
+      return null;
     }
-    return _isAuthenticated;
+    if (!_session.isValid()) {
+      return null;
+    }
+    final attributes = await _cognitoUser.getUserAttributes();
+    if (attributes == null) {
+      return null;
+    }
+    final user = User.fromUserAttributes(attributes);
+    user.hasAccess = true;
+    return user;
   }
 
   Future<CognitoCredentials> getCredentials() async {
-    final credentials = new CognitoCredentials(_identityPoolId, userPool);
-    final cognitoUser = await userPool.getCurrentUser();
-    if (cognitoUser == null) {
+    if (_cognitoUser == null || _session == null) {
       return null;
     }
-    final session = await cognitoUser.getSession();
-    await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
+    final credentials = new CognitoCredentials(_identityPoolId, _userPool);
+    await credentials.getAwsCredentials(_session.getIdToken().getJwtToken());
     return credentials;
   }
 
-  Future<String> signUp() async {
-    CognitoUserPoolData data;
-    try {
-      final userAttributes = [
-        new AttributeArg(name: 'name', value: name),
-      ];
-      data = await userPool.signUp(this.email, this.password,
-          userAttributes: userAttributes);
-    } on CognitoClientException catch (e) {
-      if (e.code == 'UsernameExistsException' ||
-          e.code == 'InvalidParameterException') {
-        return e.message;
-      }
-      throw e;
-    }
-
-    userConfirmed = data.userConfirmed;
-    if (userConfirmed == false) {
-      return 'Please confirm your email';
-    }
-
-    return 'User successfully created';
-  }
-
-  signOut() async {
-    final cognitoUser = await userPool.getCurrentUser();
-    if (cognitoUser != null) {
-      return cognitoUser.signOut();
-    }
-  }
-
-  Future<String> confirmAccount(String confirmationCode) async {
-    final cognitoUser = new CognitoUser(email, userPool);
-
-    String result;
-    try {
-      result = await cognitoUser.confirmRegistration(confirmationCode);
-    } on CognitoClientException catch (e) {
-      if (e.code == 'InvalidParameterException' ||
-          e.code == 'CodeMismatchException' ||
-          e.code == 'NotAuthorizedException' ||
-          e.code == 'UserNotFoundException') {
-        return e.message;
-      }
-      throw e;
-    }
-
-    return result;
-  }
-
-  Future<String> resendConfirmationCode() async {
-    final cognitoUser = new CognitoUser(email, userPool);
-
-    String result;
-    try {
-      result = await cognitoUser.resendConfirmationCode();
-    } on CognitoClientException catch (e) {
-      if (e.code == 'LimitExceededException' ||
-          e.code == 'InvalidParameterException') {
-        return e.message;
-      }
-      throw e;
-    }
-
-    return result;
-  }
-
-  Future<String> login() async {
-    final cognitoUser = new CognitoUser(email, userPool);
+  Future<User> login(String email, String password) async {
+    _cognitoUser = new CognitoUser(email, _userPool);
     final authDetails = new AuthenticationDetails(
       username: email,
       password: password,
     );
 
-    CognitoUserSession session;
+    bool isConfirmed = true;
     try {
-      session = await cognitoUser.authenticateUser(authDetails);
+      _session = await _cognitoUser.authenticateUser(authDetails);
     } on CognitoClientException catch (e) {
-      if (e.code == 'InvalidParameterException' ||
-          e.code == 'UserNotConfirmedException' ||
-          e.code == 'NotAuthorizedException' ||
-          e.code == 'UserNotFoundException') {
-        return e.message;
+      if (e.code == 'UserNotConfirmedException') {
+        isConfirmed = false;
+      } else {
+        throw e;
       }
-      throw e;
     }
-    if (!session.isValid()) {
-      return 'Invalid login';
+
+    if (!_session.isValid()) {
+      return null;
     }
-    _isAuthenticated = true;
-    return 'Successfully logged in!';
+
+    final attributes = await _cognitoUser.getUserAttributes();
+    final user = User.fromUserAttributes(attributes);
+    user.confirmed = isConfirmed;
+    user.hasAccess = true;
+
+    return user;
+  }
+
+  Future<bool> confirmAccount(String email, String confirmationCode) async {
+    _cognitoUser = new CognitoUser(email, _userPool);
+
+    final result = await _cognitoUser.confirmRegistration(confirmationCode);
+    if (result == 'SUCCESS') {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<void> resendConfirmationCode(String email) async {
+    _cognitoUser = new CognitoUser(email, _userPool);
+    await _cognitoUser.resendConfirmationCode();
+  }
+
+  Future<bool> checkAuthenticated() async {
+    if (_cognitoUser == null || _session == null) {
+      return false;
+    }
+    return _session.isValid();
+  }
+
+  Future<User> signUp(String email, String password, String name) async {
+    CognitoUserPoolData data;
+    final userAttributes = [
+      new AttributeArg(name: 'name', value: name),
+    ];
+    data =
+        await _userPool.signUp(email, password, userAttributes: userAttributes);
+
+    final user = new User();
+    user.email = email;
+    user.name = name;
+    user.confirmed = data.userConfirmed;
+
+    return user;
+  }
+
+  Future<void> signOut() async {
+    if (_cognitoUser != null) {
+      return _cognitoUser.signOut();
+    }
   }
 }
 
-class Counter {
-  int count;
-  getCount() async {
-    final credentials = await new User().getCredentials();
-    if (credentials == null) {
-      return null;
-    }
-    final awsSigV4Client = new AwsSigV4Client(credentials.accessKeyId,
-      credentials.secretAccessKey, _endpoint,
-      sessionToken: credentials.sessionToken, region: 'ap-southeast-1');
-    final signedRequest = new SigV4Request(awsSigV4Client,
-        method: 'GET', path: '/counter');
-    final response = await http.get(signedRequest.url, headers: signedRequest.headers);
-    print(response.body);
-  }
-}
+void main() => runApp(new SecureCounterApp());
 
 class SecureCounterApp extends StatelessWidget {
   @override
@@ -304,14 +310,25 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  final userData = new User();
+  User _user = new User();
+  final userService = new UserService(userPool);
 
   void submit(BuildContext context) async {
     _formKey.currentState.save();
 
     String message;
+    bool signUpSuccess = false;
     try {
-      message = await userData.signUp();
+      _user = await userService.signUp(_user.email, _user.password, _user.name);
+      signUpSuccess = true;
+      message = 'User sign up successful!';
+    } on CognitoClientException catch (e) {
+      if (e.code == 'UsernameExistsException' ||
+          e.code == 'InvalidParameterException') {
+        message = e.message;
+      } else {
+        message = 'Unknown client error occurred';
+      }
     } catch (e) {
       message = 'Unknown error occurred';
     }
@@ -321,14 +338,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
       action: new SnackBarAction(
         label: 'OK',
         onPressed: () {
-          if (!userData.userConfirmed) {
+          if (signUpSuccess) {
             Navigator.pop(context);
-            Navigator.push(
-              context,
-              new MaterialPageRoute(
-                  builder: (context) =>
-                      new ConfirmationScreen(email: userData.email)),
-            );
+            if (!_user.confirmed) {
+              Navigator.push(
+                context,
+                new MaterialPageRoute(
+                    builder: (context) =>
+                        new ConfirmationScreen(email: _user.email)),
+              );
+            }
           }
         },
       ),
@@ -357,7 +376,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     title: new TextFormField(
                       decoration: new InputDecoration(labelText: 'Name'),
                       onSaved: (String name) {
-                        userData.name = name;
+                        _user.name = name;
                       },
                     ),
                   ),
@@ -368,7 +387,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           hintText: 'example@inspire.my', labelText: 'Email'),
                       keyboardType: TextInputType.emailAddress,
                       onSaved: (String email) {
-                        userData.email = email;
+                        _user.email = email;
                       },
                     ),
                   ),
@@ -380,7 +399,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       obscureText: true,
                       onSaved: (String password) {
-                        userData.password = password;
+                        _user.password = password;
                       },
                     ),
                   ),
@@ -423,13 +442,26 @@ class ConfirmationScreen extends StatefulWidget {
 class _ConfirmationScreenState extends State<ConfirmationScreen> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   String confirmationCode;
-  final userData = new User();
+  User _user = new User();
+  final _userService = new UserService(userPool);
 
   _submit(BuildContext context) async {
     _formKey.currentState.save();
+    bool accountConfirmed;
     String message;
     try {
-      message = await userData.confirmAccount(confirmationCode);
+      accountConfirmed =
+          await _userService.confirmAccount(_user.email, confirmationCode);
+      message = 'Account successfully confirmed!';
+    } on CognitoClientException catch (e) {
+      if (e.code == 'InvalidParameterException' ||
+          e.code == 'CodeMismatchException' ||
+          e.code == 'NotAuthorizedException' ||
+          e.code == 'UserNotFoundException') {
+        message = e.message;
+      } else {
+        message = 'Unknown client error occurred';
+      }
     } catch (e) {
       message = 'Unknown error occurred';
     }
@@ -439,13 +471,12 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       action: new SnackBarAction(
         label: 'OK',
         onPressed: () {
-          if (message == 'SUCCESS') {
+          if (accountConfirmed) {
             Navigator.pop(context);
             Navigator.push(
               context,
               new MaterialPageRoute(
-                  builder: (context) =>
-                      new LoginScreen(email: userData.email)),
+                  builder: (context) => new LoginScreen(email: _user.email)),
             );
           }
         },
@@ -460,7 +491,15 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     _formKey.currentState.save();
     String message;
     try {
-      message = await userData.resendConfirmationCode();
+      await _userService.resendConfirmationCode(_user.email);
+      message = 'Confirmation code sent to ${_user.email}!';
+    } on CognitoClientException catch (e) {
+      if (e.code == 'LimitExceededException' ||
+          e.code == 'InvalidParameterException') {
+        message = e.message;
+      } else {
+        message = 'Unknown client error occurred';
+      }
     } catch (e) {
       message = 'Unknown error occurred';
     }
@@ -485,66 +524,66 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
         title: new Text('Confirm Account'),
       ),
       body: new Builder(
-        builder: (BuildContext context) => new Container(
-          child: new Form(
-            key: _formKey,
-            child: new ListView(
-              children: <Widget>[
-                new ListTile(
-                  leading: const Icon(Icons.email),
-                  title: new TextFormField(
-                    initialValue: widget.email,
-                    decoration: new InputDecoration(
-                        hintText: 'example@inspire.my', labelText: 'Email'),
-                    keyboardType: TextInputType.emailAddress,
-                    onSaved: (String email) {
-                      userData.email = email;
-                    },
+          builder: (BuildContext context) => new Container(
+                child: new Form(
+                  key: _formKey,
+                  child: new ListView(
+                    children: <Widget>[
+                      new ListTile(
+                        leading: const Icon(Icons.email),
+                        title: new TextFormField(
+                          initialValue: widget.email,
+                          decoration: new InputDecoration(
+                              hintText: 'example@inspire.my',
+                              labelText: 'Email'),
+                          keyboardType: TextInputType.emailAddress,
+                          onSaved: (String email) {
+                            _user.email = email;
+                          },
+                        ),
+                      ),
+                      new ListTile(
+                        leading: const Icon(Icons.lock),
+                        title: new TextFormField(
+                          decoration: new InputDecoration(
+                              labelText: 'Confirmation Code'),
+                          onSaved: (String code) {
+                            confirmationCode = code;
+                          },
+                        ),
+                      ),
+                      new Container(
+                        padding: new EdgeInsets.all(20.0),
+                        width: screenSize.width,
+                        child: new RaisedButton(
+                          child: new Text(
+                            'Submit',
+                            style: new TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _submit(context);
+                          },
+                          color: Colors.blue,
+                        ),
+                        margin: new EdgeInsets.only(
+                          top: 10.0,
+                        ),
+                      ),
+                      new Center(
+                        child: new InkWell(
+                          child: new Text(
+                            'Resend Confirmation Code',
+                            style: new TextStyle(color: Colors.blueAccent),
+                          ),
+                          onTap: () {
+                            _resendConfirmation(context);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                new ListTile(
-                  leading: const Icon(Icons.lock),
-                  title: new TextFormField(
-                    decoration:
-                        new InputDecoration(labelText: 'Confirmation Code'),
-                    onSaved: (String code) {
-                      confirmationCode = code;
-                    },
-                  ),
-                ),
-                new Container(
-                  padding: new EdgeInsets.all(20.0),
-                  width: screenSize.width,
-                  child: new RaisedButton(
-                    child: new Text(
-                      'Submit',
-                      style: new TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      _submit(context);
-                    },
-                    color: Colors.blue,
-                  ),
-                  margin: new EdgeInsets.only(
-                    top: 10.0,
-                  ),
-                ),
-                new Center(
-                  child: new InkWell(
-                    child: new Text(
-                      'Resend Confirmation Code',
-                      style: new TextStyle(color: Colors.blueAccent),
-                    ),
-                    onTap: () {
-                      _resendConfirmation(context);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-      ),
+              )),
     );
   }
 }
@@ -560,24 +599,44 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  final userData = new User();
+  final _userService = new UserService(userPool);
+  User _user = new User();
 
   submit(BuildContext context) async {
     _formKey.currentState.save();
     String message;
     try {
-      message = await userData.login();
+      _user = await _userService.login(_user.email, _user.password);
+      message = 'User sucessfully logged in!';
+      if (!_user.confirmed) {
+        message = 'Please confirm user account';
+      }
+    } on CognitoClientException catch (e) {
+      if (e.code == 'InvalidParameterException' ||
+          e.code == 'NotAuthorizedException' ||
+          e.code == 'UserNotFoundException') {
+        message = e.message;
+      } else {
+        message = 'An unknown client error occured';
+      }
     } catch (e) {
       message = 'An unknown error occurred';
     }
-
     final snackBar = new SnackBar(
       content: new Text(message),
       action: new SnackBarAction(
         label: 'OK',
         onPressed: () async {
-          if (await userData.getIsAuthenticated()) {
+          if (_user.hasAccess) {
             Navigator.pop(context);
+            if (!_user.confirmed) {
+              Navigator.push(
+                context,
+                new MaterialPageRoute(
+                    builder: (context) =>
+                        new ConfirmationScreen(email: _user.email)),
+              );
+            }
           }
         },
       ),
@@ -609,18 +668,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintText: 'example@inspire.my', labelText: 'Email'),
                       keyboardType: TextInputType.emailAddress,
                       onSaved: (String email) {
-                        userData.email = email;
+                        _user.email = email;
                       },
                     ),
                   ),
                   new ListTile(
                     leading: const Icon(Icons.lock),
                     title: new TextFormField(
-                      decoration:
-                          new InputDecoration(labelText: 'Password'),
+                      decoration: new InputDecoration(labelText: 'Password'),
                       obscureText: true,
                       onSaved: (String password) {
-                        userData.password = password;
+                        _user.password = password;
                       },
                     ),
                   ),
@@ -659,86 +717,99 @@ class SecureCounterScreen extends StatefulWidget {
 }
 
 class _SecureCounterScreenState extends State<SecureCounterScreen> {
-  int _counter = 0;
-  bool isAuthenticated = false;
+  final _userService = new UserService(userPool);
+  CounterService _counterService;
+  AwsSigV4Client _awsSigV4Client;
+  User _user = new User();
+  Counter _counter = new Counter(0);
+  bool _isAuthenticated = false;
 
-  void _incrementCounter() {
+  void _incrementCounter() async {
+    final counter = await _counterService.incrementCounter();
     setState(() {
-      _counter++;
+      _counter = counter;
     });
   }
 
-  Future<User> _getValues() async {
-    final user = new User();
+  Future<UserService> _getValues() async {
+    await _userService.init();
+    _isAuthenticated = await _userService.checkAuthenticated();
+    if (_isAuthenticated) {
+      // get user attributes from cognito
+      _user = await _userService.getCurrentUser();
 
-    try {
-      isAuthenticated = await user.getIsAuthenticated();
-    } catch (e) {
-      return null;
+      // get session credentials
+      final credentials = await _userService.getCredentials();
+      _awsSigV4Client = new AwsSigV4Client(
+          credentials.accessKeyId, credentials.secretAccessKey, _endpoint,
+          region: _region, sessionToken: credentials.sessionToken);
+
+      // get previous count
+      _counterService = new CounterService(_awsSigV4Client);
+      _counter = await _counterService.getCounter();
     }
-    if (isAuthenticated) {
-      await user.getUserAttributes();
-      return user;
-    }
-    return user;
+    return _userService;
   }
 
   @override
   Widget build(BuildContext context) {
     return new FutureBuilder(
-      future: _getValues(),
-      builder: (context, AsyncSnapshot<User> snapshot) {
-        if (snapshot.hasData) {
-          if (!isAuthenticated) {
-            return new LoginScreen();
-          }
+        future: _getValues(),
+        builder: (context, AsyncSnapshot<UserService> snapshot) {
+          if (snapshot.hasData) {
+            if (!_isAuthenticated) {
+              return new LoginScreen();
+            }
 
-          return new Scaffold(
-            appBar: new AppBar(
-              title: new Text('Secure Counter'),
-            ),
-            body: new Center(
-              child: new Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new Text(
-                    'Welcome ${snapshot.data.name}!',
-                    style: Theme.of(context).textTheme.display1,
-                  ),
-                  new Divider(),
-                  new Text(
-                    'You have pushed the button this many times:',
-                  ),
-                  new Text(
-                    '$_counter',
-                    style: Theme.of(context).textTheme.display1,
-                  ),
-                  new Divider(),
-                  new Center(
-                    child: new InkWell(
-                      child: new Text(
-                        'Logout',
-                        style: new TextStyle(color: Colors.blueAccent),
-                      ),
-                      onTap: () {
-                        snapshot.data.signOut();
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
-
+            return new Scaffold(
+              appBar: new AppBar(
+                title: new Text('Secure Counter'),
               ),
-            ),
-            floatingActionButton: new FloatingActionButton(
-              onPressed: _incrementCounter,
-              tooltip: 'Increment',
-              child: new Icon(Icons.add),
-            ),
-          );
-        }
-        return new Scaffold(appBar: new AppBar(title: new Text('Loading...')));
-      }
-    );
+              body: new Center(
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    new Text(
+                      'Welcome ${_user.name}!',
+                      style: Theme.of(context).textTheme.display1,
+                    ),
+                    new Divider(),
+                    new Text(
+                      'You have pushed the button this many times:',
+                    ),
+                    new Text(
+                      '${_counter.count}',
+                      style: Theme.of(context).textTheme.display1,
+                    ),
+                    new Divider(),
+                    new Center(
+                      child: new InkWell(
+                        child: new Text(
+                          'Logout',
+                          style: new TextStyle(color: Colors.blueAccent),
+                        ),
+                        onTap: () {
+                          _userService.signOut();
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              floatingActionButton: new FloatingActionButton(
+                onPressed: () {
+                  if (snapshot.hasData) {
+                    _incrementCounter();
+                  }
+                },
+                tooltip: 'Increment',
+                child: new Icon(Icons.add),
+              ),
+            );
+          }
+          return new Scaffold(
+              appBar: new AppBar(title: new Text('Loading...')));
+        });
   }
 }
