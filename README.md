@@ -230,6 +230,18 @@ try {
 print(passwordConfirmed);
 ```
 
+__Use case 13.__ Deleting authenticated users.
+
+```dart
+bool userDeleted = false
+try {
+  userDeleted = await cognitoUser.deleteUser();
+} catch (e) {
+  print(e);
+}
+print(userDeleted);
+```
+
 __Use case 14.__ Signing out from the application.
 
 ```dart
