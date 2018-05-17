@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
-import 'package:secure_string/secure_string.dart';
+import 'random_string_helper.dart';
 
 final String initN = 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1' +
     '29024E088A67CC74020BBEA63B139B22514A08798E3404DD' +
@@ -109,7 +109,7 @@ class AuthenticationHelper {
    * helper function to generate a random big integer
    */
   BigInt generateRandomSmallA() {
-    final String hexRandom = (new SecureString()).generate(length: 128);
+    final String hexRandom = new RandomString().generate(length: 128);
 
     final BigInt randomBigInt = BigInt.parse(hexRandom, radix: 16);
 
@@ -122,7 +122,7 @@ class AuthenticationHelper {
    * helper function to generate a random string
    */
   String generateRandomString() {
-    return (new SecureString()).generate(length: 40);
+    return new RandomString().generate(length: 40);
   }
 
   /**
@@ -134,7 +134,7 @@ class AuthenticationHelper {
         '`${deviceGroupKey}${username}:${this._randomPassword}';
     final String hashedString = this.hash(utf8.encode(combinedString));
 
-    final String hexRandom = (new SecureString()).generate(length: 16);
+    final String hexRandom = new RandomString().generate(length: 16);
 
     _saltToHashDevices = this.padHex(BigInt.parse(hexRandom, radix: 16));
 
