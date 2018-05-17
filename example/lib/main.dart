@@ -186,12 +186,7 @@ class UserService {
     _cognitoUser =
         new CognitoUser(email, _userPool, storage: _userPool.storage);
 
-    final result = await _cognitoUser.confirmRegistration(confirmationCode);
-    if (result == 'SUCCESS') {
-      return true;
-    }
-
-    return false;
+    return await _cognitoUser.confirmRegistration(confirmationCode);
   }
 
   Future<void> resendConfirmationCode(String email) async {
