@@ -1,3 +1,7 @@
+## 0.0.13
+
+- Add `RandomString` helper
+
 ## 0.0.12
 
 - Use bool `true` to represent 'SUCCESS'
