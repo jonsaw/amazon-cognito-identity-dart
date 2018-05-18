@@ -66,28 +66,28 @@ class CognitoUser {
 
     if (challengeName == 'SMS_MFA') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserMfaRequiredException('SMS_MFA challenge',
+      throw new CognitoUserMfaRequiredException(
           challengeName: challengeName,
           challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'SELECT_MFA_TYPE') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserSelectMfaTypeException('SELECT_MFA_TYPE challenge',
+      throw new CognitoUserSelectMfaTypeException(
           challengeName: challengeName,
           challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'MFA_SETUP') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserMfaSetupException('MFA_SETUP challenge',
+      throw new CognitoUserMfaSetupException(
           challengeName: challengeName,
           challengeParameters: challengeParameters);
     }
 
     if (challengeName == 'SOFTWARE_TOKEN_MFA') {
       _session = dataAuthenticate['Session'];
-      throw new CognitoUserTotpRequiredException('SOFTWARE_TOKEN_MFA challenge',
+      throw new CognitoUserTotpRequiredException(
           challengeName: challengeName,
           challengeParameters: challengeParameters);
     }
@@ -95,7 +95,7 @@ class CognitoUser {
     if (challengeName == 'CUSTOM_CHALLENGE') {
       _session = dataAuthenticate['Session'];
       throw new CognitoUserCustomChallengeException(
-          'CUSTOM_CHALLENGE challenge',
+          challengeName: challengeName,
           challengeParameters: challengeParameters);
     }
 
@@ -147,7 +147,7 @@ class CognitoUser {
 
     if (dataConfirm['UserConfirmationNecessary'] == true) {
       throw new CognitoUserConfirmationNecessaryException(
-          'UserConfirmationNecessary', _signInUserSession);
+          signInUserSession: _signInUserSession);
     }
     return _signInUserSession;
   }
@@ -438,7 +438,7 @@ class CognitoUser {
     final challengeParameters = data['ChallengeParameters'];
     if (challengeName == 'CUSTOM_CHALLENGE') {
       _session = data['Session'];
-      throw new CognitoUserCustomChallengeException('CUSTOM_CHALLENGE required',
+      throw new CognitoUserCustomChallengeException(
           challengeParameters: challengeParameters);
     }
 
@@ -647,7 +647,8 @@ class CognitoUser {
       }
 
       throw new CognitoUserNewPasswordRequiredException(
-          'New Password required', userAttributes, requiredAttributes);
+          userAttributes: userAttributes,
+          requiredAttributes: requiredAttributes);
     }
     return _authenticateUserInternal(dataAuthenticate, authenticationHelper);
   }
@@ -798,7 +799,7 @@ class CognitoUser {
     await cacheDeviceKeyAndPassword();
     if (dataConfirm['UserConfirmationNecessary'] == true) {
       throw new CognitoUserConfirmationNecessaryException(
-          'UserConfirmationNecessary', _signInUserSession);
+          signInUserSession: _signInUserSession);
     }
 
     return _signInUserSession;
@@ -884,7 +885,8 @@ class CognitoUser {
   /**
    * This is used to confirm a new password using a confirmation code
    */
-  Future<bool> confirmPassword(String confirmationCode, String newPassword) async {
+  Future<bool> confirmPassword(
+      String confirmationCode, String newPassword) async {
     final Map<String, String> paramsReq = {
       'ClientId': pool.getClientId(),
       'Username': username,

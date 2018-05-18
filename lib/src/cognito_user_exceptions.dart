@@ -1,54 +1,80 @@
 import 'cognito_user_session.dart';
 
-class CognitoUserNewPasswordRequiredException implements Exception {
+class CognitoUserException implements Exception {
+  String message;
+  String challengeName;
+  CognitoUserException([this.message]);
+
+  String toString() {
+    String messageString = '';
+    if (challengeName != null) messageString += ' "$challengeName"';
+    if (message != null) messageString += ' $message';
+    if (messageString == '') return "CognitoUserException";
+    return 'CognitoUserException:$messageString';
+  }
+}
+
+class CognitoUserNewPasswordRequiredException extends CognitoUserException {
   String message;
   dynamic userAttributes;
   List<dynamic> requiredAttributes;
   CognitoUserNewPasswordRequiredException(
-      this.message, this.userAttributes, this.requiredAttributes);
+      {this.userAttributes,
+      this.requiredAttributes,
+      this.message = 'New Password required'});
 }
 
-class CognitoUserMfaRequiredException implements Exception {
+class CognitoUserMfaRequiredException extends CognitoUserException {
   String message;
   String challengeName;
   dynamic challengeParameters;
-  CognitoUserMfaRequiredException(this.message,
-      {this.challengeName, this.challengeParameters});
+  CognitoUserMfaRequiredException(
+      {this.challengeName = 'SMS_MFA', this.challengeParameters, this.message});
 }
 
-class CognitoUserSelectMfaTypeException implements Exception {
+class CognitoUserSelectMfaTypeException extends CognitoUserException {
   String message;
   String challengeName;
   dynamic challengeParameters;
-  CognitoUserSelectMfaTypeException(this.message,
-      {this.challengeName, this.challengeParameters});
+  CognitoUserSelectMfaTypeException(
+      {this.challengeName = 'SELECT_MFA_TYPE',
+      this.challengeParameters,
+      this.message});
 }
 
-class CognitoUserMfaSetupException implements Exception {
+class CognitoUserMfaSetupException extends CognitoUserException {
   String message;
   String challengeName;
   dynamic challengeParameters;
-  CognitoUserMfaSetupException(this.message,
-      {this.challengeName, this.challengeParameters});
+  CognitoUserMfaSetupException(
+      {this.challengeName = 'MFA_SETUP',
+      this.challengeParameters,
+      this.message});
 }
 
-class CognitoUserTotpRequiredException implements Exception {
+class CognitoUserTotpRequiredException extends CognitoUserException {
   String message;
   String challengeName;
   dynamic challengeParameters;
-  CognitoUserTotpRequiredException(this.message,
-      {this.challengeName, this.challengeParameters});
+  CognitoUserTotpRequiredException(
+      {this.challengeName = 'SOFTWARE_TOKEN_MFA',
+      this.challengeParameters,
+      this.message});
 }
 
-class CognitoUserCustomChallengeException implements Exception {
+class CognitoUserCustomChallengeException extends CognitoUserException {
   String message;
+  String challengeName;
   dynamic challengeParameters;
-  CognitoUserCustomChallengeException(this.message, {this.challengeParameters});
+  CognitoUserCustomChallengeException(
+      {this.challengeName = 'CUSTOM_CHALLENGE',
+      this.challengeParameters,
+      this.message});
 }
 
-class CognitoUserConfirmationNecessaryException implements Exception {
+class CognitoUserConfirmationNecessaryException extends CognitoUserException {
   String message;
   CognitoUserSession signInUserSession;
   CognitoUserConfirmationNecessaryException(
-      this.message, this.signInUserSession);
+      {this.signInUserSession, this.message = 'User Confirmation Necessary'});
 }
