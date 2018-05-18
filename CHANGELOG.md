@@ -1,3 +1,9 @@
+## 0.0.15
+
+- Add `removeIdentityId()` to CognitoIdentityId
+- Add `resetAwsCredentials()` to CognitoCredentials
+- Fix cached Identity Id error
+
 ## 0.0.14
 
 - Cognito User Exceptions extend `CognitoUserException`
