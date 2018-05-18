@@ -42,6 +42,7 @@ class CognitoUser {
   CognitoUserPool pool;
   Client client;
   String authenticationFlowType;
+  String deviceName;
   String verifierDevices;
   CognitoStorage storage;
 
@@ -49,6 +50,7 @@ class CognitoUser {
     this.username,
     this.pool, {
     this.storage,
+    this.deviceName = 'Dart-device',
   }) {
     client = pool.client;
     authenticationFlowType = 'USER_SRP_AUTH';
@@ -134,9 +136,7 @@ class CognitoUser {
       'DeviceKey': newDeviceMetadata['DeviceKey'],
       'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
       'DeviceSecretVerifierConfig': deviceSecretVerifierConfig,
-
-      // TODO: identify device name
-      'DeviceName': 'Dart-enabled-device',
+      'DeviceName': deviceName,
     };
 
     final dataConfirm = client.request('ConfirmDevice', paramsConfirmDevice);
@@ -788,9 +788,7 @@ class CognitoUser {
           ['DeviceKey'],
       'AccessToken': _signInUserSession.getAccessToken().getJwtToken(),
       'DeviceSecretVerifierConfig': deviceSecretVerifierConfig,
-
-      // TODO: identify device name
-      'DeviceName': 'Dart-enabled-device',
+      'DeviceName': deviceName,
     };
     final dataConfirm =
         await client.request('ConfirmDevice', confirmDeviceParamsReq);
