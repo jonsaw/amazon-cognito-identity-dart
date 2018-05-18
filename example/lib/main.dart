@@ -249,11 +249,11 @@ class SecureCounterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Cognito Dart',
+      title: 'Cognito on Flutter',
       theme: new ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: HomePage(title: 'Cognito Dart Demo'),
+      home: HomePage(title: 'Cognito on Flutter'),
     );
   }
 }
