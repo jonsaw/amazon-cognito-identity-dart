@@ -1,3 +1,8 @@
+## 0.0.14
+
+- Cognito User Exceptions extend `CognitoUserException`
+- Add `CognitoUserException` toString helper
+
 ## 0.0.13
 
 - Add `RandomString` helper
