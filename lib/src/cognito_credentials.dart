@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'cognito_user_pool.dart';
 import 'client.dart';
+import 'cognito_client_exceptions.dart';
 import 'cognito_identity_id.dart';
 
 class CognitoCredentials {
@@ -9,6 +10,7 @@ class CognitoCredentials {
   String _identityPoolId;
   CognitoUserPool _pool;
   Client _client;
+  int _retryCount = 0;
   String accessKeyId;
   String secretAccessKey;
   String sessionToken;
@@ -32,7 +34,7 @@ class CognitoCredentials {
       final identityIdId = await identityId.getIdentityId(token);
 
       final authenticator =
-          'cognito-idp.${_region}.amazonaws.com/${_userPoolId}';
+          'cognito-idp.$_region.amazonaws.com/$_userPoolId';
       final Map<String, String> loginParam = {
         authenticator: token,
       };
@@ -40,9 +42,26 @@ class CognitoCredentials {
         'IdentityId': identityIdId,
         'Logins': loginParam,
       };
-      final data = await _client.request('GetCredentialsForIdentity', paramsReq,
-          service: 'AWSCognitoIdentityService',
-          endpoint: 'https://cognito-identity.${_region}.amazonaws.com/');
+
+      var data;
+      try {
+        data = await _client.request('GetCredentialsForIdentity', paramsReq,
+            service: 'AWSCognitoIdentityService',
+            endpoint: 'https://cognito-identity.$_region.amazonaws.com/');
+      } on CognitoClientException catch (e) {
+
+        // remove cached Identity Id and try again
+        await identityId.removeIdentityId();
+        if (e.code == 'NotAuthorizedException' && _retryCount < 1) {
+          _retryCount++;
+          return await getAwsCredentials(token);
+        }
+
+        _retryCount = 0;
+        throw e;
+      }
+
+      _retryCount = 0;
 
       accessKeyId = data['Credentials']['AccessKeyId'];
       secretAccessKey = data['Credentials']['SecretKey'];
