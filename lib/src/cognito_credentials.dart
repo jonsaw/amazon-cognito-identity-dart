@@ -51,4 +51,15 @@ class CognitoCredentials {
       expireTime = (data['Credentials']['Expiration']).toInt() * 1000;
     }
   }
+
+  /**
+   * Reset AWS Credentials; removes Identity Id from local storage
+   */
+  Future<void> resetAwsCredentials() async {
+    await new CognitoIdentityId(_identityPoolId, _pool).removeIdentityId();
+    expireTime = null;
+    accessKeyId = null;
+    secretAccessKey = null;
+    sessionToken = null;
+  }
 }
