@@ -810,30 +810,38 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
     });
   }
 
-  Future<UserService> _getValues() async {
-    await _userService.init();
-    _isAuthenticated = await _userService.checkAuthenticated();
-    if (_isAuthenticated) {
-      // get user attributes from cognito
-      _user = await _userService.getCurrentUser();
+  Future<UserService> _getValues(BuildContext context) async {
+    try {
+      await _userService.init();
+      _isAuthenticated = await _userService.checkAuthenticated();
+      if (_isAuthenticated) {
+        // get user attributes from cognito
+        _user = await _userService.getCurrentUser();
 
-      // get session credentials
-      final credentials = await _userService.getCredentials();
-      _awsSigV4Client = new AwsSigV4Client(
-          credentials.accessKeyId, credentials.secretAccessKey, _endpoint,
-          region: _region, sessionToken: credentials.sessionToken);
+        // get session credentials
+        final credentials = await _userService.getCredentials();
+        _awsSigV4Client = new AwsSigV4Client(
+            credentials.accessKeyId, credentials.secretAccessKey, _endpoint,
+            region: _region, sessionToken: credentials.sessionToken);
 
-      // get previous count
-      _counterService = new CounterService(_awsSigV4Client);
-      _counter = await _counterService.getCounter();
-    }
+        // get previous count
+        _counterService = new CounterService(_awsSigV4Client);
+        _counter = await _counterService.getCounter();
+      }
     return _userService;
+    } on CognitoClientException catch (e) {
+      if (e.code == 'NotAuthorizedException') {
+        await _userService.signOut();
+        Navigator.pop(context);
+      }
+      throw e;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return new FutureBuilder(
-        future: _getValues(),
+        future: _getValues(context),
         builder: (context, AsyncSnapshot<UserService> snapshot) {
           if (snapshot.hasData) {
             if (!_isAuthenticated) {
