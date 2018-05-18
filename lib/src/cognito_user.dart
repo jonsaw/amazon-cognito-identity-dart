@@ -36,14 +36,14 @@ class CognitoUser {
   String _deviceKey;
   String _randomPassword;
   String _deviceGroupKey;
-  String _verfierDevices;
   String _session;
+  CognitoUserSession _signInUserSession;
   String username;
   CognitoUserPool pool;
   Client client;
   String authenticationFlowType;
+  String verifierDevices;
   CognitoStorage storage;
-  CognitoUserSession _signInUserSession;
 
   CognitoUser(
     this.username,
@@ -126,7 +126,7 @@ class CognitoUser {
           base64.encode(hex.decode(authenticationHelper.getVerifierDevices()))
     };
 
-    _verfierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
+    verifierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
     _deviceGroupKey = newDeviceMetadata['DeviceGroupKey'];
     _randomPassword = authenticationHelper.getRandomPassword();
 
@@ -778,7 +778,7 @@ class CognitoUser {
           base64.encode(hex.decode(authenticationHelper.getVerifierDevices())),
     };
 
-    _verfierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
+    verifierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
     _deviceGroupKey = dataAuthenticate['AuthenticationResult']
         ['NewDeviceMetadata']['DeviceGroupKey'];
     _randomPassword = authenticationHelper.getRandomPassword();
