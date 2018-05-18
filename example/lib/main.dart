@@ -116,6 +116,7 @@ class UserService {
   CognitoUser _cognitoUser;
   CognitoUserSession _session;
   UserService(this._userPool);
+  CognitoCredentials credentials;
 
   /// Initiate user session from local storage if present
   Future<bool> init() async {
@@ -153,7 +154,7 @@ class UserService {
     if (_cognitoUser == null || _session == null) {
       return null;
     }
-    final credentials = new CognitoCredentials(_identityPoolId, _userPool);
+    credentials = new CognitoCredentials(_identityPoolId, _userPool);
     await credentials.getAwsCredentials(_session.getIdToken().getJwtToken());
     return credentials;
   }
@@ -233,6 +234,9 @@ class UserService {
   }
 
   Future<void> signOut() async {
+    if (credentials != null) {
+      await credentials.resetAwsCredentials();
+    }
     if (_cognitoUser != null) {
       return _cognitoUser.signOut();
     }
