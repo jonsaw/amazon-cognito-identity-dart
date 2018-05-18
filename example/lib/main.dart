@@ -12,63 +12,15 @@ const _awsClientId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 const _identityPoolId = 'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
 
-// Setup endpoints here
+// Setup endpoints here:
 const _region = 'ap-southeast-1';
 const _endpoint =
     'https://xxxxxxxxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
 
 final userPool = new CognitoUserPool(_awsUserPoolId, _awsClientId);
 
-class Counter {
-  int count;
-  Counter(this.count);
-
-  static Counter fromJson(json) {
-    return new Counter(json['count']);
-  }
-}
-
-class User {
-  String email;
-  String name;
-  String password;
-  bool confirmed = false;
-  bool hasAccess = false;
-
-  static User fromUserAttributes(List<CognitoUserAttribute> attributes) {
-    final user = new User();
-    attributes.forEach((attribute) {
-      if (attribute.getName() == 'email') {
-        user.email = attribute.getValue();
-      } else if (attribute.getName() == 'name') {
-        user.name = attribute.getValue();
-      }
-    });
-    return user;
-  }
-}
-
-class CounterService {
-  AwsSigV4Client awsSigV4Client;
-  CounterService(this.awsSigV4Client);
-
-  Future<Counter> getCounter() async {
-    final signedRequest =
-        new SigV4Request(awsSigV4Client, method: 'GET', path: '/counter');
-    final response =
-        await http.get(signedRequest.url, headers: signedRequest.headers);
-    return Counter.fromJson(json.decode(response.body));
-  }
-
-  Future<Counter> incrementCounter() async {
-    final signedRequest =
-        new SigV4Request(awsSigV4Client, method: 'PUT', path: '/counter');
-    final response =
-        await http.put(signedRequest.url, headers: signedRequest.headers);
-    return Counter.fromJson(json.decode(response.body));
-  }
-}
-
+/// Extend CognitoStorage with Shared Preferences to persist account
+/// login sessions
 class Storage extends CognitoStorage {
   SharedPreferences _prefs;
   Storage(this._prefs);
@@ -106,12 +58,66 @@ class Storage extends CognitoStorage {
   }
 }
 
+class Counter {
+  int count;
+  Counter(this.count);
+
+  static Counter fromJson(json) {
+    return new Counter(json['count']);
+  }
+}
+
+class User {
+  String email;
+  String name;
+  String password;
+  bool confirmed = false;
+  bool hasAccess = false;
+
+  /// Decode user from Cognito User Attributes
+  static User fromUserAttributes(List<CognitoUserAttribute> attributes) {
+    final user = new User();
+    attributes.forEach((attribute) {
+      if (attribute.getName() == 'email') {
+        user.email = attribute.getValue();
+      } else if (attribute.getName() == 'name') {
+        user.name = attribute.getValue();
+      }
+    });
+    return user;
+  }
+}
+
+class CounterService {
+  AwsSigV4Client awsSigV4Client;
+  CounterService(this.awsSigV4Client);
+
+  /// Retrieve user's previous count from Lambda + DynamoDB
+  Future<Counter> getCounter() async {
+    final signedRequest =
+        new SigV4Request(awsSigV4Client, method: 'GET', path: '/counter');
+    final response =
+        await http.get(signedRequest.url, headers: signedRequest.headers);
+    return Counter.fromJson(json.decode(response.body));
+  }
+
+  /// Increment user's count in DynamoDB
+  Future<Counter> incrementCounter() async {
+    final signedRequest =
+        new SigV4Request(awsSigV4Client, method: 'PUT', path: '/counter');
+    final response =
+        await http.put(signedRequest.url, headers: signedRequest.headers);
+    return Counter.fromJson(json.decode(response.body));
+  }
+}
+
 class UserService {
   CognitoUserPool _userPool;
   CognitoUser _cognitoUser;
   CognitoUserSession _session;
   UserService(this._userPool);
 
+  /// Initiate user session from local storage if present
   Future<bool> init() async {
     final prefs = await SharedPreferences.getInstance();
     final storage = new Storage(prefs);
@@ -125,6 +131,7 @@ class UserService {
     return _session.isValid();
   }
 
+  /// Get existing user from session with his/her attributes
   Future<User> getCurrentUser() async {
     if (_cognitoUser == null || _session == null) {
       return null;
@@ -141,6 +148,7 @@ class UserService {
     return user;
   }
 
+  /// Retrieve user credentials -- for use with other AWS services
   Future<CognitoCredentials> getCredentials() async {
     if (_cognitoUser == null || _session == null) {
       return null;
@@ -150,6 +158,7 @@ class UserService {
     return credentials;
   }
 
+  /// Login user
   Future<User> login(String email, String password) async {
     _cognitoUser =
         new CognitoUser(email, _userPool, storage: _userPool.storage);
@@ -159,9 +168,10 @@ class UserService {
       password: password,
     );
 
-    bool isConfirmed = true;
+    bool isConfirmed;
     try {
       _session = await _cognitoUser.authenticateUser(authDetails);
+      isConfirmed = true;
     } on CognitoClientException catch (e) {
       if (e.code == 'UserNotConfirmedException') {
         isConfirmed = false;
@@ -182,6 +192,7 @@ class UserService {
     return user;
   }
 
+  /// Confirm user's account with confirmation code sent to email
   Future<bool> confirmAccount(String email, String confirmationCode) async {
     _cognitoUser =
         new CognitoUser(email, _userPool, storage: _userPool.storage);
@@ -189,12 +200,14 @@ class UserService {
     return await _cognitoUser.confirmRegistration(confirmationCode);
   }
 
+  /// Resend confirmation code to user's email
   Future<void> resendConfirmationCode(String email) async {
     _cognitoUser =
         new CognitoUser(email, _userPool, storage: _userPool.storage);
     await _cognitoUser.resendConfirmationCode();
   }
 
+  /// Check if user's current session is valid
   Future<bool> checkAuthenticated() async {
     if (_cognitoUser == null || _session == null) {
       return false;
@@ -202,6 +215,7 @@ class UserService {
     return _session.isValid();
   }
 
+  /// Sign up new user
   Future<User> signUp(String email, String password, String name) async {
     CognitoUserPoolData data;
     final userAttributes = [
