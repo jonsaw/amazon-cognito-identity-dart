@@ -44,4 +44,12 @@ class CognitoIdentityId {
 
     return this.identityId;
   }
+
+  /**
+   * Remove AWS Identity Id from storage
+   */
+  Future<String> removeIdentityId() async {
+    final identityIdKey = 'aws.cognito.identity-id.${_identityPoolId}';
+    return await _pool.storage.removeItem(identityIdKey);
+  }
 }
