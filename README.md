@@ -3,7 +3,11 @@ Unofficial Amazon Cognito Identity SDK written in Dart for [Dart](https://www.da
 
 Based on [amazon-cognito-identity-js](https://github.com/aws/aws-amplify/tree/master/packages/amazon-cognito-identity-js).
 
-Example Flutter app can be found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
+Need ideas to get started?
+
+- Check out use cases [below](https://github.com/jonsaw/amazon-cognito-identity-dart/#usage).
+- Example Flutter app can be found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
+- Authenticated access to AppSync + GraphQL or API Gateway + Lambda found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#signing-requests).
 
 Please note that this package is _not_ production ready.
 
@@ -280,6 +284,62 @@ print(credentials.sessionToken);
 
 ### Signing Requests
 
+#### For AppSync's GraphQL
+
+Signing GraphQL requests for authenticated users with IAM Authorization type for access to AppSync data.
+
+```dart
+import 'package:http/http.dart' as http;
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'package:amazon_cognito_identity_dart/sig_v4.dart';
+
+final credentials = new CognitoCredentials(
+    'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', userPool);
+await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
+
+const endpoint =
+    'https://xxxxxxxxxxxxxxxxxxxxxxxxxx.appsync-api.ap-southeast-1.amazonaws.com';
+
+final awsSigV4Client = new AwsSigV4Client(
+    credentials.accessKeyId, credentials.secretAccessKey, endpoint,
+    serviceName: 'appsync',
+    sessionToken: credentials.sessionToken,
+    region: 'ap-southeast-1');
+
+final String query = '''query GetEvent {
+  getEvent(id: "3dcd52c3-1fd6-4e4d-8da6-946ef4a0c94d") {
+    id
+    name
+    comments(limit: 10) {
+      items {
+        content
+        createdAt
+      }
+    }
+  }
+}''';
+
+final signedRequest = new SigV4Request(awsSigV4Client,
+    method: 'POST', path: '/graphql',
+    headers: new Map<String, String>.from(
+        {'Content-Type': 'application/graphql; charset=utf-8'}),
+    body: new Map<String, String>.from({
+        'operationName': 'GetEvent',
+        'query': query}));
+
+http.Response response;
+try {
+  response = await http.post(
+      signedRequest.url,
+      headers: signedRequest.headers, body: signedRequest.body);
+} catch (e) {
+  print(e);
+}
+print(response.body);
+```
+
+#### For API Gateway & Lambda
+
 Signing requests for authenticated users for access to secured routes to API Gateway and Lambda.
 
 ```dart
@@ -293,9 +353,10 @@ await credentials.getAwsCredentials(session.getIdToken().getJwtToken());
 
 const endpoint =
     'https://xxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
-final awsSigV4Client = new AwsSigV4Client(credentials.accessKeyId,
-    credentials.secretAccessKey, endpoint,
-    sessionToken: credentials.sessionToken, region: 'ap-southeast-1');
+final awsSigV4Client = new AwsSigV4Client(
+    credentials.accessKeyId, credentials.secretAccessKey, endpoint,
+    sessionToken: credentials.sessionToken,
+    region: 'ap-southeast-1');
 
 final signedRequest = new SigV4Request(awsSigV4Client,
     method: 'POST',
