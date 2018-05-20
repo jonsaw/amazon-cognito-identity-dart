@@ -40,7 +40,7 @@ class CognitoIdentityId {
         endpoint: 'https://cognito-identity.${_region}.amazonaws.com/');
 
     this.identityId = data['IdentityId'];
-    _pool.storage.setItem(identityIdKey, this.identityId);
+    await _pool.storage.setItem(identityIdKey, this.identityId);
 
     return this.identityId;
   }
