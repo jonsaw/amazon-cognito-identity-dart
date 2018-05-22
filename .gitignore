@@ -21,3 +21,4 @@ doc/api/
 
 # Ignore private tests
 test/_*_test.dart
+example/test
