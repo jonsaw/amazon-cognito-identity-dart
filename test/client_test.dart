@@ -73,7 +73,7 @@ void main() {
           await client.request('TestOperation', paramsReq, endpoint: '/200');
       expect(data['it'], equals('works'));
     });
-    test('400 unknown error should return UnknownError', () async {
+    test('400 unknown error throws default exception', () async {
       final client = new Client(
         region: 'ap-southeast-1',
         client: testClient,
@@ -93,7 +93,7 @@ void main() {
       }
       expect(data, isNull);
     });
-    test('400 NotAuthorizedException should return error __type', () async {
+    test('400 error __type throws exception with correct code', () async {
       final client = new Client(
         region: 'ap-southeast-1',
         client: testClient,
@@ -116,7 +116,7 @@ void main() {
       }
       expect(data, isNull);
     });
-    test('400 x-amzn-ErrorType should return error', () async {
+    test('400 x-amzn-ErrorType throws exception with correct code', () async {
       final client = new Client(
         region: 'ap-southeast-1',
         client: testClient,
