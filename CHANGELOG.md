@@ -1,3 +1,7 @@
+## 0.0.16
+
+- Better client request exception handling
+
 ## 0.0.15+1
 
 - Fix [Example App](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example) cached Identity Id
