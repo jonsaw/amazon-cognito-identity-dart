@@ -383,7 +383,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       message = 'User sign up successful!';
     } on CognitoClientException catch (e) {
       if (e.code == 'UsernameExistsException' ||
-          e.code == 'InvalidParameterException') {
+          e.code == 'InvalidParameterException' ||
+          e.code == 'ResourceNotFoundException') {
         message = e.message;
       } else {
         message = 'Unknown client error occurred';
@@ -516,7 +517,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       if (e.code == 'InvalidParameterException' ||
           e.code == 'CodeMismatchException' ||
           e.code == 'NotAuthorizedException' ||
-          e.code == 'UserNotFoundException') {
+          e.code == 'UserNotFoundException' ||
+          e.code == 'ResourceNotFoundException') {
         message = e.message;
       } else {
         message = 'Unknown client error occurred';
@@ -554,7 +556,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       message = 'Confirmation code sent to ${_user.email}!';
     } on CognitoClientException catch (e) {
       if (e.code == 'LimitExceededException' ||
-          e.code == 'InvalidParameterException') {
+          e.code == 'InvalidParameterException' ||
+          e.code == 'ResourceNotFoundException') {
         message = e.message;
       } else {
         message = 'Unknown client error occurred';
@@ -680,7 +683,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } on CognitoClientException catch (e) {
       if (e.code == 'InvalidParameterException' ||
           e.code == 'NotAuthorizedException' ||
-          e.code == 'UserNotFoundException') {
+          e.code == 'UserNotFoundException' ||
+          e.code == 'ResourceNotFoundException') {
         message = e.message;
       } else {
         message = 'An unknown client error occured';
