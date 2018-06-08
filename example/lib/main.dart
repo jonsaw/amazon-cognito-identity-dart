@@ -62,7 +62,7 @@ class Counter {
   int count;
   Counter(this.count);
 
-  static Counter fromJson(json) {
+  factory Counter.fromJson(json) {
     return new Counter(json['count']);
   }
 }
@@ -74,9 +74,11 @@ class User {
   bool confirmed = false;
   bool hasAccess = false;
 
+  User({this.email, this.name});
+
   /// Decode user from Cognito User Attributes
-  static User fromUserAttributes(List<CognitoUserAttribute> attributes) {
-    final user = new User();
+  factory User.fromUserAttributes(List<CognitoUserAttribute> attributes) {
+    final user = User();
     attributes.forEach((attribute) {
       if (attribute.getName() == 'email') {
         user.email = attribute.getValue();
@@ -98,7 +100,7 @@ class CounterService {
         new SigV4Request(awsSigV4Client, method: 'GET', path: '/counter');
     final response =
         await http.get(signedRequest.url, headers: signedRequest.headers);
-    return Counter.fromJson(json.decode(response.body));
+    return new Counter.fromJson(json.decode(response.body));
   }
 
   /// Increment user's count in DynamoDB
@@ -107,7 +109,7 @@ class CounterService {
         new SigV4Request(awsSigV4Client, method: 'PUT', path: '/counter');
     final response =
         await http.put(signedRequest.url, headers: signedRequest.headers);
-    return Counter.fromJson(json.decode(response.body));
+    return new Counter.fromJson(json.decode(response.body));
   }
 }
 
@@ -144,7 +146,7 @@ class UserService {
     if (attributes == null) {
       return null;
     }
-    final user = User.fromUserAttributes(attributes);
+    final user = new User.fromUserAttributes(attributes);
     user.hasAccess = true;
     return user;
   }
@@ -186,7 +188,7 @@ class UserService {
     }
 
     final attributes = await _cognitoUser.getUserAttributes();
-    final user = User.fromUserAttributes(attributes);
+    final user = new User.fromUserAttributes(attributes);
     user.confirmed = isConfirmed;
     user.hasAccess = true;
 
