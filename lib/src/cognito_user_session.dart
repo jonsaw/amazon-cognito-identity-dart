@@ -58,7 +58,8 @@ class CognitoUserSession {
   }
 
   /**
-   * Invalidate this tokens. All succeeding calls to isValid() will return false. Use cognitoUser.getSession() to refresh the cognito session with the cognito server. 
+   * Invalidate this tokens. All succeeding calls to isValid() will return false. Use cognitoUser
+   * .getSession() to refresh the cognito session with the cognito server.
    */
   invalidateToken() {
     _invalidated = true;
@@ -69,7 +70,9 @@ class CognitoUserSession {
    * in tokens and the current time (adjusted with clock drift)
    */
   bool isValid() {
-    if (_invalidated) return false;
+    if (_invalidated) {
+      return false;
+    }
     final now = (new DateTime.now().millisecondsSinceEpoch / 1000).floor();
     final adjusted = now - clockDrift;
 
