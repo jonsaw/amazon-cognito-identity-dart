@@ -1,3 +1,8 @@
+## 0.0.17
+
+- `invalidateToken()` to invalidate existing user session
+- CognitoClientException `toString` with error details
+
 ## 0.0.16
 
 - Better client request exception handling
