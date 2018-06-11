@@ -8,6 +8,7 @@ class CognitoUserSession {
   CognitoRefreshToken refreshToken;
   CognitoAccessToken accessToken;
   int clockDrift;
+  bool _invalidated = false;
 
   CognitoUserSession(
     this.idToken,
@@ -57,10 +58,21 @@ class CognitoUserSession {
   }
 
   /**
+   * Invalidate this tokens. All succeeding calls to isValid() will return false. Use cognitoUser
+   * .getSession() to refresh the cognito session with the cognito server.
+   */
+  invalidateToken() {
+    _invalidated = true;
+  }
+
+  /**
    * Checks to see if the session is still valid based on session expiry information found
    * in tokens and the current time (adjusted with clock drift)
    */
   bool isValid() {
+    if (_invalidated) {
+      return false;
+    }
     final now = (new DateTime.now().millisecondsSinceEpoch / 1000).floor();
     final adjusted = now - clockDrift;
 
