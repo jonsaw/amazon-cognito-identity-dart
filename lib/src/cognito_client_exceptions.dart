@@ -9,4 +9,9 @@ class CognitoClientException implements Exception {
     this.statusCode,
     this.name,
   });
+
+  @override
+  String toString() {
+    return 'CognitoClientException{statusCode: $statusCode, code: $code, name: $name, message: $message}';
+  }
 }
