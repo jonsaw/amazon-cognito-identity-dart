@@ -72,16 +72,12 @@ class AuthenticationHelper {
     return _verifierDevices;
   }
 
-  /**
-   * Return constant newPasswordRequiredChallengeUserAttributePrefix
-   */
+  /// Return constant newPasswordRequiredChallengeUserAttributePrefix
   String getNewPasswordRequiredChallengeUserAttributePrefix() {
     return _newPasswordRequiredChallengeUserAttributePrefix;
   }
 
-  /**
-   * Calculates the final hkdf based on computed S value, and computed U value and the key
-   */
+  /// Calculates the final hkdf based on computed S value, and computed U value and the key
   List<int> getPasswordAuthenticationKey(
       String username, String password, BigInt serverBValue, BigInt salt) {
     if (serverBValue % N == BigInt.zero) {
@@ -105,9 +101,7 @@ class AuthenticationHelper {
     return hkdf;
   }
 
-  /**
-   * helper function to generate a random big integer
-   */
+  /// helper function to generate a random big integer
   BigInt generateRandomSmallA() {
     final String hexRandom = new RandomString().generate(length: 128);
 
@@ -118,20 +112,16 @@ class AuthenticationHelper {
     return smallABigInt;
   }
 
-  /**
-   * helper function to generate a random string
-   */
+  /// helper function to generate a random string
   String generateRandomString() {
     return new RandomString().generate(length: 40);
   }
 
-  /**
-   * Generate salts and compute verifier.
-   */
+  /// Generate salts and compute verifier.
   void generateHashDevice(String deviceGroupKey, String username) {
     _randomPassword = this.generateRandomString();
     final String combinedString =
-        '`${deviceGroupKey}${username}:${this._randomPassword}';
+        '`$deviceGroupKey$username:${this._randomPassword}';
     final String hashedString = this.hash(utf8.encode(combinedString));
 
     final String hexRandom = new RandomString().generate(length: 16);
@@ -147,25 +137,19 @@ class AuthenticationHelper {
     _verifierDevices = this.padHex(verifierDevicesNotPadded);
   }
 
-  /**
-   * Calculate a hash from a bitArray
-   */
+  /// Calculate a hash from a bitArray
   String hash(List<int> buf) {
     final String hashHex = sha256.convert(buf).toString();
     return (new List(64 - hashHex.length).join('0')) + hashHex;
   }
 
-  /**
-   * Calculate a hash from a hex string
-   */
+  /// Calculate a hash from a hex string
   String hexHash(String hexStr) {
     return this.hash(hex.decode(hexStr));
   }
 
-  /**
-   * Calculate the client's public value A = g^a%N
-   * with the generated random number a
-   */
+  /// Calculate the client's public value A = g^a%N
+  /// with the generated random number a
   BigInt calculateA(BigInt a) {
     final A = modPow(this.g, a, N);
     if ((A % this.N) == BigInt.zero) {
@@ -174,17 +158,13 @@ class AuthenticationHelper {
     return A;
   }
 
-  /**
-   * Calculate the client's value U which is the hash of A and B
-   */
+  /// Calculate the client's value U which is the hash of A and B
   BigInt calculateU(BigInt a, BigInt b) {
     _uHexHash = hexHash(padHex(a) + padHex(b));
     return BigInt.parse(_uHexHash, radix: 16);
   }
 
-  /**
-   * Calculates the S value used in getPasswordAuthenticationKey
-   */
+  /// Calculates the S value used in getPasswordAuthenticationKey
   BigInt calculateS(BigInt xValue, BigInt serverBValue) {
     final gModPowXN = modPow(this.g, xValue, N);
     final intValue2 = serverBValue - (this.k * gModPowXN);
@@ -196,10 +176,8 @@ class AuthenticationHelper {
     return result % N;
   }
 
-  /**
-   * Temporary workaround to BigInt.modPow's bug
-   * Based on https://github.com/dart-lang/googleapis_auth/blob/master/lib/src/crypto/rsa.dart
-   */
+  /// Temporary workaround to BigInt.modPow's bug
+  /// Based on https://github.com/dart-lang/googleapis_auth/blob/master/lib/src/crypto/rsa.dart
   BigInt modPow(BigInt b, BigInt e, BigInt m) {
     if (e < BigInt.one) {
       return BigInt.one;
@@ -218,9 +196,7 @@ class AuthenticationHelper {
     return r;
   }
 
-  /**
-   * Standard hkdf algorithm
-   */
+  /// Standard hkdf algorithm
   List<int> computehkdf(List<int> ikm, List<int> salt) {
     Hmac hmac1 = new Hmac(sha256, salt);
     Digest prk = hmac1.convert(ikm);
@@ -231,15 +207,13 @@ class AuthenticationHelper {
     return dig.bytes.getRange(0, 16).toList();
   }
 
-  /**
-   * Converts a BigInteger to hex format padded with zeroes for hashing
-   */
+  /// Converts a BigInteger to hex format padded with zeroes for hashing
   String padHex(BigInt bigInt) {
     var hashStr = bigInt.toRadixString(16);
     if (hashStr.length % 2 == 1) {
-      hashStr = '0${hashStr}';
+      hashStr = '0$hashStr';
     } else if ('89ABCDEFabcdef'.indexOf(hashStr[0]) != -1) {
-      hashStr = '00${hashStr}';
+      hashStr = '00$hashStr';
     }
     return hashStr;
   }

@@ -17,17 +17,15 @@ class CognitoIdentityId {
     _client = pool.client;
   }
 
-  /**
-   * Get AWS Identity Id for authenticated user
-   */
+  /// Get AWS Identity Id for authenticated user
   Future<String> getIdentityId(token) async {
-    final identityIdKey = 'aws.cognito.identity-id.${_identityPoolId}';
+    final identityIdKey = 'aws.cognito.identity-id.$_identityPoolId';
     String identityId = await _pool.storage.getItem(identityIdKey);
     if (identityId != null) {
       this.identityId = identityId;
       return identityId;
     }
-    final authenticator = 'cognito-idp.${_region}.amazonaws.com/${_userPoolId}';
+    final authenticator = 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
     final Map<String, String> loginParam = {
       authenticator: token,
     };
@@ -37,7 +35,7 @@ class CognitoIdentityId {
     };
     final data = await _client.request('GetId', paramsReq,
         service: 'AWSCognitoIdentityService',
-        endpoint: 'https://cognito-identity.${_region}.amazonaws.com/');
+        endpoint: 'https://cognito-identity.$_region.amazonaws.com/');
 
     this.identityId = data['IdentityId'];
     await _pool.storage.setItem(identityIdKey, this.identityId);
@@ -45,11 +43,9 @@ class CognitoIdentityId {
     return this.identityId;
   }
 
-  /**
-   * Remove AWS Identity Id from storage
-   */
+  /// Remove AWS Identity Id from storage
   Future<String> removeIdentityId() async {
-    final identityIdKey = 'aws.cognito.identity-id.${_identityPoolId}';
+    final identityIdKey = 'aws.cognito.identity-id.$_identityPoolId';
     return await _pool.storage.removeItem(identityIdKey);
   }
 }

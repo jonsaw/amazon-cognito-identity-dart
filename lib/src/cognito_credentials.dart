@@ -24,17 +24,14 @@ class CognitoCredentials {
     _client = pool.client;
   }
 
-  /**
-   * Get AWS Credentials for authenticated user
-   */
+  /// Get AWS Credentials for authenticated user
   Future<void> getAwsCredentials(token) async {
     if (expireTime == null ||
         new DateTime.now().millisecondsSinceEpoch > expireTime - 60000) {
       final identityId = new CognitoIdentityId(_identityPoolId, _pool);
       final identityIdId = await identityId.getIdentityId(token);
 
-      final authenticator =
-          'cognito-idp.$_region.amazonaws.com/$_userPoolId';
+      final authenticator = 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
       final Map<String, String> loginParam = {
         authenticator: token,
       };
@@ -49,7 +46,6 @@ class CognitoCredentials {
             service: 'AWSCognitoIdentityService',
             endpoint: 'https://cognito-identity.$_region.amazonaws.com/');
       } on CognitoClientException catch (e) {
-
         // remove cached Identity Id and try again
         await identityId.removeIdentityId();
         if (e.code == 'NotAuthorizedException' && _retryCount < 1) {
@@ -71,9 +67,7 @@ class CognitoCredentials {
     }
   }
 
-  /**
-   * Reset AWS Credentials; removes Identity Id from local storage
-   */
+  /// Reset AWS Credentials; removes Identity Id from local storage
   Future<void> resetAwsCredentials() async {
     await new CognitoIdentityId(_identityPoolId, _pool).removeIdentityId();
     expireTime = null;
