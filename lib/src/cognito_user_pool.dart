@@ -36,8 +36,8 @@ class CognitoUserPool {
     client = new Client(region: _region, endpoint: endpoint);
 
     if (this.storage == null) {
-      this.storage =
-          storage = (new CognitoStorageHelper(new CognitoMemoryStorage())).getStorage();
+      this.storage = storage =
+          (new CognitoStorageHelper(new CognitoMemoryStorage())).getStorage();
     }
   }
 
@@ -55,7 +55,7 @@ class CognitoUserPool {
 
   Future<CognitoUser> getCurrentUser() async {
     final lastUserKey =
-        'CognitoIdentityServiceProvider.${_clientId}.LastAuthUser';
+        'CognitoIdentityServiceProvider.$_clientId.LastAuthUser';
 
     final lastAuthUser = await storage.getItem(lastUserKey);
     if (lastAuthUser != null) {
@@ -69,13 +69,11 @@ class CognitoUserPool {
     return null;
   }
 
-  /**
-   * This method returns the encoded data string used for cognito advanced security feature.
-   * This would be generated only when developer has included the JS used for collecting the
-   * data on their client. Please refer to documentation to know more about using AdvancedSecurity
-   * features
-   * TODO: not supported at the moment
-   */
+  /// This method returns the encoded data string used for cognito advanced security feature.
+  /// This would be generated only when developer has included the JS used for collecting the
+  /// data on their client. Please refer to documentation to know more about using AdvancedSecurity
+  /// features
+  /// TODO: not supported at the moment
   String getUserContextData(String username) {
     return null;
   }

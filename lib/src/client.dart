@@ -25,9 +25,7 @@ class Client {
     }
   }
 
-  /**
-   * Makes requests on AWS API service provider
-   */
+  /// Makes requests on AWS API service provider
   request(String operation, Map<dynamic, dynamic> params,
       {String endpoint, String service}) async {
     final endpointReq = endpoint ?? this.endpoint;
@@ -36,7 +34,7 @@ class Client {
 
     Map<String, String> headersReq = {
       'Content-Type': 'application/x-amz-json-1.1',
-      'X-Amz-Target': '${targetService}.${operation}',
+      'X-Amz-Target': '$targetService.$operation',
       'X-Amz-User-Agent': _userAgent,
     };
 

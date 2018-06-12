@@ -22,14 +22,10 @@ class CognitoUserAuthResult {
   String session;
   dynamic authenticationResult;
   CognitoUserAuthResult({
-    ChallengeName,
-    Session,
-    AuthenticationResult,
-  }) {
-    challengeName = ChallengeName;
-    session = Session;
-    authenticationResult = AuthenticationResult;
-  }
+    this.challengeName,
+    this.session,
+    this.authenticationResult,
+  });
 }
 
 class CognitoUser {
@@ -152,10 +148,8 @@ class CognitoUser {
     return _signInUserSession;
   }
 
-  /**
-   * This is used to get a session, either from the session object
-   * or from  the local storage, or by using a refresh token
-   */
+  /// This is used to get a session, either from the session object
+  /// or from  the local storage, or by using a refresh token
   Future<CognitoUserSession> getSession() async {
     if (username == null) {
       throw new Exception('Username is null. Cannot retrieve a new session');
@@ -166,11 +160,11 @@ class CognitoUser {
     }
 
     final keyPrefix =
-        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
-    final idTokenKey = '${keyPrefix}.idToken';
-    final accessTokenKey = '${keyPrefix}.accessToken';
-    final refreshTokenKey = '${keyPrefix}.refreshToken';
-    final clockDriftKey = '${keyPrefix}.clockDrift';
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.$username';
+    final idTokenKey = '$keyPrefix.idToken';
+    final accessTokenKey = '$keyPrefix.accessToken';
+    final refreshTokenKey = '$keyPrefix.refreshToken';
+    final clockDriftKey = '$keyPrefix.clockDrift';
 
     if (await storage.getItem(idTokenKey) != null) {
       final idToken = new CognitoIdToken(await storage.getItem(idTokenKey));
@@ -203,9 +197,7 @@ class CognitoUser {
         'Local storage is missing an ID Token, Please authenticate');
   }
 
-  /**
-   * This is used to initiate an attribute confirmation request
-   */
+  /// This is used to initiate an attribute confirmation request
   Future getAttributeVerificationCode(String attributeName) async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
@@ -219,9 +211,7 @@ class CognitoUser {
     return await client.request('GetUserAttributeVerificationCode', paramsReq);
   }
 
-  /**
-   * This is used to confirm an attribute using a confirmation code
-   */
+  /// This is used to confirm an attribute using a confirmation code
   Future<bool> verifyAttribute(attributeName, confirmationCode) async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
@@ -237,20 +227,18 @@ class CognitoUser {
     return true;
   }
 
-  /**
-   * This uses the refreshToken to retrieve a new session
-   */
+  /// This uses the refreshToken to retrieve a new session
   Future<CognitoUserSession> refreshSession(
       CognitoRefreshToken refreshToken) async {
     final Map<String, String> authParameters = {
       'REFRESH_TOKEN': refreshToken.getToken(),
     };
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}';
-    final lastUserKey = '${keyPrefix}.LastAuthUser';
+    final lastUserKey = '$keyPrefix.LastAuthUser';
 
     if (await storage.getItem(lastUserKey) != null) {
       this.username = await storage.getItem(lastUserKey);
-      final deviceKeyKey = '${keyPrefix}.${this.username}.deviceKey';
+      final deviceKeyKey = '$keyPrefix.${this.username}.deviceKey';
       _deviceKey = await this.storage.getItem(deviceKeyKey);
       authParameters['DEVICE_KEY'] = _deviceKey;
     }
@@ -298,19 +286,17 @@ class CognitoUser {
     return authenticationFlowType;
   }
 
-  /**
-   * sets authentication flow type
-   */
+  /// sets authentication flow type
   void setAuthenticationFlowType(String authenticationFlowType) {
     this.authenticationFlowType = authenticationFlowType;
   }
 
   getCachedDeviceKeyAndPassword() async {
     final String keyPrefix =
-        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
-    final String deviceKeyKey = '${keyPrefix}.deviceKey';
-    final String randomPasswordKey = '${keyPrefix}.randomPasswordKey';
-    final String deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.$username';
+    final String deviceKeyKey = '$keyPrefix.deviceKey';
+    final String randomPasswordKey = '$keyPrefix.randomPasswordKey';
+    final String deviceGroupKeyKey = '$keyPrefix.deviceGroupKey';
 
     if (await storage.getItem(deviceKeyKey) != null) {
       _deviceKey = await storage.getItem(deviceKeyKey);
@@ -319,16 +305,12 @@ class CognitoUser {
     }
   }
 
-  /**
-   * This returns the user context data for advanced security feature.
-   */
+  /// This returns the user context data for advanced security feature.
   String getUserContextData() {
     return pool.getUserContextData(username);
   }
 
-  /**
-   * This is used to build a user session from tokens retrieved in the authentication result
-   */
+  /// This is used to build a user session from tokens retrieved in the authentication result
   CognitoUserSession getCognitoUserSession(Map<String, dynamic> authResult) {
     final idToken = new CognitoIdToken(authResult['IdToken']);
     final accessToken = new CognitoAccessToken(authResult['AccessToken']);
@@ -338,10 +320,8 @@ class CognitoUser {
         refreshToken: refreshToken);
   }
 
-  /**
-   * This is used to get a session using device authentication. It is called at the end of user
-   * authentication
-   */
+  /// This is used to get a session using device authentication. It is called at the end of user
+  /// authentication
   Future<CognitoUserSession> getDeviceResponse() async {
     final authenticationHelper = new AuthenticationHelper(_deviceGroupKey);
     final dateHelper = new DateHelper();
@@ -410,9 +390,7 @@ class CognitoUser {
     return _signInUserSession;
   }
 
-  /**
-   * This is used for authenticating the user through the custom authentication flow.
-   */
+  /// This is used for authenticating the user through the custom authentication flow.
   Future<CognitoUserSession> initiateAuth(
       AuthenticationDetails authDetails) async {
     final authParameters = authDetails.getAuthParameters();
@@ -448,9 +426,7 @@ class CognitoUser {
     return _signInUserSession;
   }
 
-  /**
-   * This is used for authenticating the user.
-   */
+  /// This is used for authenticating the user.
   Future<CognitoUserSession> authenticateUser(
       AuthenticationDetails authDetails) async {
     if (authenticationFlowType == 'USER_PASSWORD_AUTH') {
@@ -461,17 +437,13 @@ class CognitoUser {
     throw new UnimplementedError('Authentication flow type is not supported.');
   }
 
-  /**
-   * This is used for the user to signOut of the application and clear the cached tokens.
-   */
+  /// This is used for the user to signOut of the application and clear the cached tokens.
   void signOut() async {
     _signInUserSession = null;
     await clearCachedTokens();
   }
 
-  /**
-   * This is used to globally revoke all tokens issued to a user
-   */
+  /// This is used to globally revoke all tokens issued to a user
   globalSignOut() async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
@@ -653,9 +625,7 @@ class CognitoUser {
     return _authenticateUserInternal(dataAuthenticate, authenticationHelper);
   }
 
-  /**
-   * This is used for a certain user to confirm the registration by using a confirmation code
-   */
+  /// This is used for a certain user to confirm the registration by using a confirmation code
   Future<bool> confirmRegistration(String confirmationCode,
       [bool forceAliasCreation = false]) async {
     Map<String, dynamic> params = {
@@ -673,9 +643,7 @@ class CognitoUser {
     return true;
   }
 
-  /**
-   * This is used by a user to resend a confirmation code
-   */
+  /// This is used by a user to resend a confirmation code
   resendConfirmationCode() async {
     Map<String, dynamic> params = {
       'ClientId': pool.getClientId(),
@@ -686,9 +654,7 @@ class CognitoUser {
     return data;
   }
 
-  /**
-   * This is used by the user once he has the responses to a custom challenge
-   */
+  /// This is used by the user once he has the responses to a custom challenge
   Future<CognitoUserSession> sendCustomChallengeAnswer(
       String answerChallenge) async {
     final Map<String, String> challengeResponses = {
@@ -720,9 +686,7 @@ class CognitoUser {
     return _authenticateUserInternal(data, authenticationHelper);
   }
 
-  /**
-   * This is used by the user once he has an MFA code
-   */
+  /// This is used by the user once he has an MFA code
   Future<CognitoUserSession> sendMFACode(String confirmationCode,
       [String mfaType = 'SMS_MFA']) async {
     final Map<String, String> challengeResponses = {
@@ -803,9 +767,7 @@ class CognitoUser {
     return _signInUserSession;
   }
 
-  /**
-   * This is used by an authenticated user to change the current password
-   */
+  /// This is used by an authenticated user to change the current password
   Future<bool> changePassword(
       String oldUserPassword, String newUserPassword) async {
     if (!(_signInUserSession != null && _signInUserSession.isValid())) {
@@ -822,9 +784,7 @@ class CognitoUser {
     return true;
   }
 
-  /**
-   * This is used by authenticated users to enable MFA for him/herself
-   */
+  /// This is used by authenticated users to enable MFA for him/herself
   Future<bool> enableMfa() async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
@@ -846,9 +806,7 @@ class CognitoUser {
     return true;
   }
 
-  /**
-   * This is used by an authenticated user to disable MFA for him/herself
-   */
+  /// This is used by an authenticated user to disable MFA for him/herself
   Future<bool> disableMfa() async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
@@ -865,9 +823,7 @@ class CognitoUser {
     return true;
   }
 
-  /**
-   * This is used to initiate a forgot password request
-   */
+  /// This is used to initiate a forgot password request
   Future forgotPassword() async {
     final Map<String, String> paramsReq = {
       'ClientId': pool.getClientId(),
@@ -880,9 +836,7 @@ class CognitoUser {
     return await client.request('ForgotPassword', paramsReq);
   }
 
-  /**
-   * This is used to confirm a new password using a confirmation code
-   */
+  /// This is used to confirm a new password using a confirmation code
   Future<bool> confirmPassword(
       String confirmationCode, String newPassword) async {
     final Map<String, String> paramsReq = {
@@ -899,16 +853,14 @@ class CognitoUser {
     return true;
   }
 
-  /**
-   * This is used to save the session tokens to local storage
-   */
-  void cacheTokens() async {
+  /// This is used to save the session tokens to local storage
+  Future<void> cacheTokens() async {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}';
-    final idTokenKey = '${keyPrefix}.${username}.idToken';
-    final accessTokenKey = '${keyPrefix}.${username}.accessToken';
-    final refreshTokenKey = '${keyPrefix}.${username}.refreshToken';
-    final clockDriftKey = '${keyPrefix}.${username}.clockDrift';
-    final lastUserKey = '${keyPrefix}.LastAuthUser';
+    final idTokenKey = '$keyPrefix.$username.idToken';
+    final accessTokenKey = '$keyPrefix.$username.accessToken';
+    final refreshTokenKey = '$keyPrefix.$username.refreshToken';
+    final clockDriftKey = '$keyPrefix.$username.clockDrift';
+    final lastUserKey = '$keyPrefix.LastAuthUser';
 
     await Future.wait([
       storage.setItem(
@@ -922,15 +874,13 @@ class CognitoUser {
     ]);
   }
 
-  /**
-   * This is used to clear the session tokens from local storage
-   */
-  void clearCachedTokens() async {
+  /// This is used to clear the session tokens from local storage
+  Future<void> clearCachedTokens() async {
     final keyPrefix = 'CognitoIdentityServiceProvider.${pool.getClientId()}';
-    final idTokenKey = '${keyPrefix}.${this.username}.idToken';
-    final accessTokenKey = '${keyPrefix}.${this.username}.accessToken';
-    final refreshTokenKey = '${keyPrefix}.${this.username}.refreshToken';
-    final lastUserKey = '${keyPrefix}.LastAuthUser';
+    final idTokenKey = '$keyPrefix.${this.username}.idToken';
+    final accessTokenKey = '$keyPrefix.${this.username}.accessToken';
+    final refreshTokenKey = '$keyPrefix.${this.username}.refreshToken';
+    final lastUserKey = '$keyPrefix.LastAuthUser';
 
     await Future.wait([
       storage.removeItem(idTokenKey),
@@ -940,15 +890,13 @@ class CognitoUser {
     ]);
   }
 
-  /**
-   * This is used to cache the device key and device group and device password
-   */
-  void cacheDeviceKeyAndPassword() async {
+  /// This is used to cache the device key and device group and device password
+  Future<void> cacheDeviceKeyAndPassword() async {
     final keyPrefix =
-        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
-    final deviceKeyKey = '${keyPrefix}.deviceKey';
-    final randomPasswordKey = '${keyPrefix}.randomPasswordKey';
-    final deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.$username';
+    final deviceKeyKey = '$keyPrefix.deviceKey';
+    final randomPasswordKey = '$keyPrefix.randomPasswordKey';
+    final deviceGroupKeyKey = '$keyPrefix.deviceGroupKey';
 
     await Future.wait([
       storage.setItem(deviceKeyKey, _deviceKey),
@@ -957,15 +905,13 @@ class CognitoUser {
     ]);
   }
 
-  /**
-   * This is used to clear the device key info from local storage
-   */
-  void clearCachedDeviceKeyAndPassword() async {
+  /// This is used to clear the device key info from local storage
+  Future<void> clearCachedDeviceKeyAndPassword() async {
     final keyPrefix =
-        'CognitoIdentityServiceProvider.${pool.getClientId()}.${username}';
-    final deviceKeyKey = '${keyPrefix}.deviceKey';
-    final randomPasswordKey = '${keyPrefix}.randomPasswordKey';
-    final deviceGroupKeyKey = '${keyPrefix}.deviceGroupKey';
+        'CognitoIdentityServiceProvider.${pool.getClientId()}.$username';
+    final deviceKeyKey = '$keyPrefix.deviceKey';
+    final randomPasswordKey = '$keyPrefix.randomPasswordKey';
+    final deviceGroupKeyKey = '$keyPrefix.deviceGroupKey';
 
     await Future.wait([
       storage.removeItem(deviceKeyKey),
@@ -974,9 +920,7 @@ class CognitoUser {
     ]);
   }
 
-  /**
-   * This is used by authenticated users to get a list of attributes
-   */
+  /// This is used by authenticated users to get a list of attributes
   Future<List<CognitoUserAttribute>> getUserAttributes() async {
     if (!(_signInUserSession != null && _signInUserSession.isValid())) {
       throw new Exception('User is not authenticated');
@@ -999,9 +943,7 @@ class CognitoUser {
     return attributeList;
   }
 
-  /**
-   * This is used by authenticated users to change a list of attributes
-   */
+  /// This is used by authenticated users to change a list of attributes
   updateAttributes(List<CognitoUserAttribute> attributes) async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
@@ -1014,9 +956,7 @@ class CognitoUser {
     await client.request('UpdateUserAttributes', paramsReq);
   }
 
-  /**
-   * This is used by an authenticated user to delete a list of attributes
-   */
+  /// This is used by an authenticated user to delete a list of attributes
   deleteAttributes(List<String> attributeList) async {
     if (!(_signInUserSession != null && _signInUserSession.isValid())) {
       throw new Exception('User is not authenticated');
@@ -1029,9 +969,7 @@ class CognitoUser {
     await client.request('DeleteUserAttributes', paramsReq);
   }
 
-  /**
-   * This is used by an authenticated user to delete him/herself
-   */
+  /// This is used by an authenticated user to delete him/herself
   Future<bool> deleteUser() async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
