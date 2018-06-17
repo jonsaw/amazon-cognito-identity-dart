@@ -84,13 +84,15 @@ class CognitoUserPool {
     List<AttributeArg> userAttributes,
     List<AttributeArg> validationData,
   }) async {
-    var params = new Map();
-    params['ClientId'] = _clientId;
-    params['Username'] = username;
-    params['Password'] = password;
-    params['UserAttributes'] = userAttributes;
-    params['ValidationData'] = validationData;
-    var data = await this.client.request('SignUp', params);
+    final Map<String, dynamic> params = {
+      'ClientId': _clientId,
+      'Username': username,
+      'Password': password,
+      'UserAttributes': userAttributes,
+      'ValidationData': validationData,
+    };
+
+    final data = await this.client.request('SignUp', params);
     if (data == null) {
       return null;
     }

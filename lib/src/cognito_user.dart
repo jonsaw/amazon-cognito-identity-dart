@@ -326,9 +326,10 @@ class CognitoUser {
     final authenticationHelper = new AuthenticationHelper(_deviceGroupKey);
     final dateHelper = new DateHelper();
 
-    Map<String, String> authParameters = new Map();
-    authParameters['USERNAME'] = this.username;
-    authParameters['DEVICE_KEY'] = this._deviceKey;
+    final Map<String, String> authParameters = {
+      'USERNAME': this.username,
+      'DEVICE_KEY': this._deviceKey,
+    };
     final aValue = authenticationHelper.getLargeAValue();
     authParameters['SRP_A'] = aValue.toRadixString(16);
 
@@ -438,13 +439,13 @@ class CognitoUser {
   }
 
   /// This is used for the user to signOut of the application and clear the cached tokens.
-  void signOut() async {
+  Future<void> signOut() async {
     _signInUserSession = null;
     await clearCachedTokens();
   }
 
   /// This is used to globally revoke all tokens issued to a user
-  globalSignOut() async {
+  Future<void> globalSignOut() async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
     }
@@ -457,9 +458,10 @@ class CognitoUser {
 
   Future<CognitoUserSession> _authenticateUserPlainUsernamePassword(
       AuthenticationDetails authDetails) async {
-    Map<String, String> authParameters = new Map();
-    authParameters['USERNAME'] = this.username;
-    authParameters['PASSWORD'] = authDetails.getPassword();
+    final Map<String, String> authParameters = {
+      'USERNAME': this.username,
+      'PASSWORD': authDetails.getPassword(),
+    };
     if (authParameters['PASSWORD'] == null) {
       throw new ArgumentError('PASSWORD parameter is required');
     }

@@ -13,7 +13,7 @@ void main() {
         equals('https://cognito-idp.ap-southeast-1.amazonaws.com/'));
   });
 
-  test('intiating Client with endpoint should use endpoint', () {
+  test('initiating Client with endpoint should use endpoint', () {
     final client = new Client(
       endpoint: 'https://cognito-idp.custom-region.aws.com',
       region: 'ap-southeaset-10',

@@ -26,7 +26,7 @@ class Client {
   }
 
   /// Makes requests on AWS API service provider
-  request(String operation, Map<dynamic, dynamic> params,
+  request(String operation, Map<String, dynamic> params,
       {String endpoint, String service}) async {
     final endpointReq = endpoint ?? this.endpoint;
     final targetService = service ?? _service;
