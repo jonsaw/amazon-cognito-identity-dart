@@ -438,13 +438,13 @@ class CognitoUser {
   }
 
   /// This is used for the user to signOut of the application and clear the cached tokens.
-  void signOut() async {
+  Future<void> signOut() async {
     _signInUserSession = null;
     await clearCachedTokens();
   }
 
   /// This is used to globally revoke all tokens issued to a user
-  globalSignOut() async {
+  Future<void> globalSignOut() async {
     if (_signInUserSession == null || !_signInUserSession.isValid()) {
       throw new Exception('User is not authenticated');
     }
