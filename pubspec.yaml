@@ -1,5 +1,5 @@
 name: amazon_cognito_identity_dart
-version: 0.0.17
+version: 0.0.18
 author: Jon Saw <jon.saw@gmail.com>
 homepage: https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master
 description: Unofficial Amazon Cognito Identity Provider Dart SDK,

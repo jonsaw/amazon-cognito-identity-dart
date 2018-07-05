@@ -1,3 +1,7 @@
+## 0.0.18
+
+- Add missing request `await`s
+
 ## 0.0.17
 
 - `invalidateToken()` to invalidate existing user session
