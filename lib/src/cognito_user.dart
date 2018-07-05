@@ -135,7 +135,8 @@ class CognitoUser {
       'DeviceName': deviceName,
     };
 
-    final dataConfirm = await client.request('ConfirmDevice', paramsConfirmDevice);
+    final dataConfirm =
+        await client.request('ConfirmDevice', paramsConfirmDevice);
 
     _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
         ['DeviceKey'];
@@ -714,7 +715,7 @@ class CognitoUser {
     }
 
     final dataAuthenticate =
-        client.request('RespondToAuthChallenge', paramsReq);
+        await client.request('RespondToAuthChallenge', paramsReq);
 
     final String challengeName = dataAuthenticate['ChallengeName'];
 
