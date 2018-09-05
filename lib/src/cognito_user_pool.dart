@@ -25,6 +25,7 @@ class CognitoUserPool {
     String endpoint,
     this.storage,
     this.advancedSecurityDataCollectionFlag = true,
+    this.client,
   }) {
     _userPoolId = userPoolId;
     _clientId = clientId;
@@ -33,7 +34,10 @@ class CognitoUserPool {
       throw new ArgumentError('Invalid userPoolId format.');
     }
     _region = userPoolId.split('_')[0];
-    client = new Client(region: _region, endpoint: endpoint);
+
+    if (client == null) {
+      client = new Client(region: _region, endpoint: endpoint);
+    }
 
     if (this.storage == null) {
       this.storage = storage =
