@@ -834,7 +834,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
         _counterService = new CounterService(_awsSigV4Client);
         _counter = await _counterService.getCounter();
       }
-    return _userService;
+      return _userService;
     } on CognitoClientException catch (e) {
       if (e.code == 'NotAuthorizedException') {
         await _userService.signOut();

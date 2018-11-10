@@ -6,7 +6,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: "^0.1.0"
-  amazon_cognito_identity_dart: "^0.0.16"
+  amazon_cognito_identity_dart: "^0.0.19"
   shared_preferences: "^0.4.1"
 
 dev_dependencies:
