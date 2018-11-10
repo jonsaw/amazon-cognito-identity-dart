@@ -1,3 +1,6 @@
+## 0.0.19
+- Upgrade test dependencies
+
 ## 0.0.18
 
 - Add missing request `await`s
