@@ -8,6 +8,7 @@ Need ideas to get started?
 - Check out use cases [below](https://github.com/jonsaw/amazon-cognito-identity-dart/#usage).
 - Example Flutter app can be found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/tree/master/example).
 - Authenticated access to AppSync + GraphQL or API Gateway + Lambda found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#signing-requests).
+- Follow the tutorial on [Serverless Stack](https://serverless-stack.com/chapters/create-a-cognito-user-pool.html) for best Cognito setup.
 
 Please note that this package is _not_ production ready.
 
