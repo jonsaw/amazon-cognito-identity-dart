@@ -32,6 +32,7 @@ class CognitoUserPool {
     String userPoolId,
     String clientId, {
     String endpoint,
+    Client customClient,
     this.storage,
     this.advancedSecurityDataCollectionFlag = true,
   }) {
@@ -43,6 +44,10 @@ class CognitoUserPool {
     }
     _region = userPoolId.split('_')[0];
     client = new Client(region: _region, endpoint: endpoint);
+
+    if (customClient != null) {
+      client = customClient;
+    }
 
     if (this.storage == null) {
       this.storage = storage =
@@ -87,6 +92,8 @@ class CognitoUserPool {
     return null;
   }
 
+  /// Registers the user in the specified user pool and creates a
+  /// user name, password, and user attributes.
   Future<CognitoUserPoolData> signUp(
     String username,
     String password, {
