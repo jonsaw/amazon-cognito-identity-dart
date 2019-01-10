@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:amazon_cognito_identity_dart/src/cognito_user_pool.dart';
 import 'package:amazon_cognito_identity_dart/src/mocks/sign_up.dart'
     as signUpMock;
+import 'package:amazon_cognito_identity_dart/src/cognito_client_exceptions.dart';
 
 void main() {
   test('initiating with invalid userPoolId', () {
@@ -60,21 +61,53 @@ void main() {
   });
 
   group('signUp', () {
-    group('successful', () {
-      test('with user confirmed', () async {
-        final c = Client(
-          client: MockClient((request) => Future<http.Response>.value(
-              signUpMock.successfulConfirmedSignUp)),
-        );
-        final cup = CognitoUserPool(
-          'ap-southeast-1_nnnnnnnnn',
-          'nnnnnnnnnnnnnnnnnnnnnnnnnn',
-          customClient: c,
-        );
-        final data = await cup.signUp('username', 'password');
-        expect(data.userConfirmed, equals(true));
-        expect(data.userSub, equals('XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'));
-      });
+    test('successful confirmed signup', () async {
+      final c = Client(
+        client: MockClient((request) =>
+            Future<http.Response>.value(signUpMock.successfulConfirmedSignUp)),
+      );
+      final cup = CognitoUserPool(
+        'ap-southeast-1_nnnnnnnnn',
+        'nnnnnnnnnnnnnnnnnnnnnnnnnn',
+        customClient: c,
+      );
+      final data = await cup.signUp('username', 'password');
+      expect(data.userConfirmed, equals(true));
+      expect(data.userSub, equals('XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'));
+    });
+
+    test('successful unconfirmed signup', () async {
+      final c = Client(
+        client: MockClient((request) => Future<http.Response>.value(
+            signUpMock.successfulUnconfirmedSignUp)),
+      );
+      final cup = CognitoUserPool(
+        'ap-southeast-1_nnnnnnnnn',
+        'nnnnnnnnnnnnnnnnnnnnnnnnnn',
+        customClient: c,
+      );
+      final data = await cup.signUp('username', 'password');
+      expect(data.userConfirmed, equals(false));
+      expect(data.userSub, equals('XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'));
+    });
+
+    test('unsuccessful', () async {
+      final c = Client(
+        client: MockClient((request) => Future<http.Response>.value(
+              signUpMock.notAuthorizedException,
+            )),
+      );
+      final cup = CognitoUserPool(
+        'ap-southeast-1_nnnnnnnnn',
+        'nnnnnnnnnnnnnnnnnnnnnnnnnn',
+        customClient: c,
+      );
+      try {
+        await cup.signUp('username', 'password');
+      } on CognitoClientException catch (e) {
+        expect(e.code, equals('NotAuthorizedException'));
+        expect(e.message, isNotEmpty);
+      }
     });
   });
 }
