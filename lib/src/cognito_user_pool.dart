@@ -9,6 +9,15 @@ class CognitoUserPoolData {
   bool userConfirmed;
   String userSub;
   CognitoUserPoolData(this.user, {this.userConfirmed, this.userSub});
+
+  factory CognitoUserPoolData.fromData(
+      CognitoUser user, Map<String, dynamic> parsedJson) {
+    return CognitoUserPoolData(
+      user,
+      userConfirmed: parsedJson['UserConfirmed'] ?? false,
+      userSub: parsedJson['UserSub'],
+    );
+  }
 }
 
 class CognitoUserPool {
@@ -96,15 +105,9 @@ class CognitoUserPool {
     if (data == null) {
       return null;
     }
-    CognitoUser cognitoUser = new CognitoUser(
-      username,
-      this,
-      storage: storage,
-    );
-    return new CognitoUserPoolData(
-      cognitoUser,
-      userConfirmed: data['UserConfirmed'] ?? false,
-      userSub: data['UserSub'],
+    return CognitoUserPoolData.fromData(
+      CognitoUser(username, this, storage: storage),
+      data,
     );
   }
 }
