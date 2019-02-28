@@ -1,3 +1,7 @@
+## 0.0.21
+- Convert SigV4 methods to static
+- Expose SigV4Client generated values
+
 ## 0.0.19
 - Upgrade test dependencies
 
