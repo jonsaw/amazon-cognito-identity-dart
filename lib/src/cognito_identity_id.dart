@@ -18,14 +18,14 @@ class CognitoIdentityId {
   }
 
   /// Get AWS Identity Id for authenticated user
-  Future<String> getIdentityId(token) async {
+  Future<String> getIdentityId(token, [String authenticator]) async {
     final identityIdKey = 'aws.cognito.identity-id.$_identityPoolId';
     String identityId = await _pool.storage.getItem(identityIdKey);
     if (identityId != null) {
       this.identityId = identityId;
       return identityId;
     }
-    final authenticator = 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
+    authenticator ??= 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
     final Map<String, String> loginParam = {
       authenticator: token,
     };
