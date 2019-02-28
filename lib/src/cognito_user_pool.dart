@@ -9,6 +9,15 @@ class CognitoUserPoolData {
   bool userConfirmed;
   String userSub;
   CognitoUserPoolData(this.user, {this.userConfirmed, this.userSub});
+
+  factory CognitoUserPoolData.fromData(
+      CognitoUser user, Map<String, dynamic> parsedJson) {
+    return CognitoUserPoolData(
+      user,
+      userConfirmed: parsedJson['UserConfirmed'] ?? false,
+      userSub: parsedJson['UserSub'],
+    );
+  }
 }
 
 class CognitoUserPool {
@@ -23,6 +32,7 @@ class CognitoUserPool {
     String userPoolId,
     String clientId, {
     String endpoint,
+    Client customClient,
     this.storage,
     this.advancedSecurityDataCollectionFlag = true,
   }) {
@@ -34,6 +44,10 @@ class CognitoUserPool {
     }
     _region = userPoolId.split('_')[0];
     client = new Client(region: _region, endpoint: endpoint);
+
+    if (customClient != null) {
+      client = customClient;
+    }
 
     if (this.storage == null) {
       this.storage = storage =
@@ -78,6 +92,8 @@ class CognitoUserPool {
     return null;
   }
 
+  /// Registers the user in the specified user pool and creates a
+  /// user name, password, and user attributes.
   Future<CognitoUserPoolData> signUp(
     String username,
     String password, {
@@ -96,15 +112,9 @@ class CognitoUserPool {
     if (data == null) {
       return null;
     }
-    CognitoUser cognitoUser = new CognitoUser(
-      username,
-      this,
-      storage: storage,
-    );
-    return new CognitoUserPoolData(
-      cognitoUser,
-      userConfirmed: data['UserConfirmed'] ?? false,
-      userSub: data['UserSub'],
+    return CognitoUserPoolData.fromData(
+      CognitoUser(username, this, storage: storage),
+      data,
     );
   }
 }
