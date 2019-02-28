@@ -116,8 +116,10 @@ class SigV4Request {
     return sigV4.buildAuthorizationHeader(
         awsSigV4Client.accessKey, credentialScope, headers, signature);
   }
+}
 
-  String _generateDatetime() {
+class SigV4 {
+  static String generateDatetime() {
     return new DateTime.now()
         .toUtc()
         .toString()
@@ -126,9 +128,7 @@ class SigV4Request {
         .split(' ')
         .join('T');
   }
-}
 
-class SigV4 {
   static List<int> hash(List<int> value) {
     return sha256.convert(value).bytes;
   }
