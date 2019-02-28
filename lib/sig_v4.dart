@@ -129,29 +129,29 @@ class SigV4Request {
 }
 
 class SigV4 {
-  List<int> hash(List<int> value) {
+  static List<int> hash(List<int> value) {
     return sha256.convert(value).bytes;
   }
 
-  String hexEncode(List<int> value) {
+  static String hexEncode(List<int> value) {
     return hex.encode(value);
   }
 
-  List<int> sign(List<int> key, String message) {
+  static List<int> sign(List<int> key, String message) {
     Hmac hmac = new Hmac(sha256, key);
     Digest dig = hmac.convert(utf8.encode(message));
     return dig.bytes;
   }
 
-  String hashCanonicalRequest(request) {
+  static String hashCanonicalRequest(request) {
     return hexEncode(hash(utf8.encode(request)));
   }
 
-  String buildCanonicalUri(String uri) {
+  static String buildCanonicalUri(String uri) {
     return Uri.encodeFull(uri);
   }
 
-  String buildCanonicalQueryString(Map<String, String> queryParams) {
+  static String buildCanonicalQueryString(Map<String, String> queryParams) {
     if (queryParams == null) {
       return '';
     }
@@ -164,14 +164,13 @@ class SigV4 {
 
     var canonicalQueryString = '';
     sortedQueryParams.forEach((key) {
-      canonicalQueryString +=
-          '${key}=${Uri.encodeComponent(queryParams[key])}&';
+      canonicalQueryString += '$key=${Uri.encodeComponent(queryParams[key])}&';
     });
 
     return canonicalQueryString.substring(0, canonicalQueryString.length - 1);
   }
 
-  String buildCanonicalHeaders(Map<String, String> headers) {
+  static String buildCanonicalHeaders(Map<String, String> headers) {
     final List<String> sortedKeys = [];
     headers.forEach((property, _) {
       sortedKeys.add(property);
@@ -187,7 +186,7 @@ class SigV4 {
     return canonicalHeaders;
   }
 
-  String buildCanonicalSignedHeaders(Map<String, String> headers) {
+  static String buildCanonicalSignedHeaders(Map<String, String> headers) {
     final List<String> sortedKeys = [];
     headers.forEach((property, _) {
       sortedKeys.add(property.toLowerCase());
@@ -197,16 +196,17 @@ class SigV4 {
     return sortedKeys.join(';');
   }
 
-  String buildStringToSign(
+  static String buildStringToSign(
       String datetime, String credentialScope, String hashedCanonicalRequest) {
-    return '${_aws_sha_256}\n${datetime}\n${credentialScope}\n${hashedCanonicalRequest}';
+    return '$_aws_sha_256\n$datetime\n$credentialScope\n$hashedCanonicalRequest';
   }
 
-  String buildCredentialScope(String datetime, String region, String service) {
-    return '${datetime.substring(0, 8)}/${region}/${service}/${_aws4_request}';
+  static String buildCredentialScope(
+      String datetime, String region, String service) {
+    return '${datetime.substring(0, 8)}/$region/$service/$_aws4_request';
   }
 
-  String buildCanonicalRequest(
+  static String buildCanonicalRequest(
       String method,
       String path,
       Map<String, String> queryParams,
@@ -223,8 +223,8 @@ class SigV4 {
     return canonicalRequest.join('\n');
   }
 
-  String buildAuthorizationHeader(String accessKey, String credentialScope,
-      Map<String, String> headers, String signature) {
+  static String buildAuthorizationHeader(String accessKey,
+      String credentialScope, Map<String, String> headers, String signature) {
     return _aws_sha_256 +
         ' Credential=' +
         accessKey +
@@ -236,19 +236,18 @@ class SigV4 {
         signature;
   }
 
-  List<int> calculateSigningKey(
+  static List<int> calculateSigningKey(
       String secretKey, String datetime, String region, String service) {
     return sign(
         sign(
             sign(
-                sign(utf8.encode('${_aws4}${secretKey}'),
-                    datetime.substring(0, 8)),
+                sign(utf8.encode('$_aws4$secretKey'), datetime.substring(0, 8)),
                 region),
             service),
         _aws4_request);
   }
 
-  String calculateSignature(List<int> signingKey, String stringToSign) {
+  static String calculateSignature(List<int> signingKey, String stringToSign) {
     return hexEncode(sign(signingKey, stringToSign));
   }
 }
