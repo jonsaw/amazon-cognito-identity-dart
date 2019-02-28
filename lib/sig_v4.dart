@@ -42,17 +42,24 @@ class SigV4Request {
   String url;
   String body;
   AwsSigV4Client awsSigV4Client;
+  String canonicalRequest;
+  String hashedCanonicalRequest;
+  String credentialScope;
+  String stringToSign;
+  String datetime;
+  List<int> signingKey;
+  String signature;
   SigV4Request(
     this.awsSigV4Client, {
     String method,
     String path,
-    String datetime,
+    this.datetime,
     this.queryParams,
     this.headers,
     dynamic body,
   }) {
     this.method = method.toUpperCase();
-    this.path = '${awsSigV4Client.pathComponent}${path}';
+    this.path = '${awsSigV4Client.pathComponent}$path';
     if (headers == null) {
       headers = {};
     }
@@ -71,49 +78,48 @@ class SigV4Request {
       headers.remove('Content-Type');
     }
     if (datetime == null) {
-      datetime = _generateDatetime();
+      datetime = SigV4.generateDatetime();
     }
     headers[_x_amz_date] = datetime;
     final endpointUri = Uri.parse(awsSigV4Client.endpoint);
     headers[_host] = endpointUri.host;
 
-    final sigV4 = new SigV4();
-    headers[_authorization] = _generateAuthorization(sigV4, datetime);
+    headers[_authorization] = _generateAuthorization(datetime);
     if (awsSigV4Client.sessionToken != null) {
       headers[_x_amz_security_token] = awsSigV4Client.sessionToken;
     }
     headers.remove(_host);
 
-    url = _generateUrl(sigV4);
+    url = _generateUrl();
 
     if (headers['Content-Type'] == null) {
       headers['Content-Type'] = awsSigV4Client.defaultContentType;
     }
   }
 
-  String _generateUrl(SigV4 sigV4) {
-    var url = '${awsSigV4Client.endpoint}${path}';
+  String _generateUrl() {
+    var url = '${awsSigV4Client.endpoint}$path';
     if (queryParams != null) {
-      final queryString = sigV4.buildCanonicalQueryString(queryParams);
+      final queryString = SigV4.buildCanonicalQueryString(queryParams);
       if (queryString != '') {
-        url += '?${queryString}';
+        url += '?$queryString';
       }
     }
     return url;
   }
 
-  String _generateAuthorization(SigV4 sigV4, String datetime) {
-    final canonicalRequest =
-        sigV4.buildCanonicalRequest(method, path, queryParams, headers, body);
-    final hashedCanonicalRequest = sigV4.hashCanonicalRequest(canonicalRequest);
-    final credentialScope = sigV4.buildCredentialScope(
+  String _generateAuthorization(String datetime) {
+    canonicalRequest =
+        SigV4.buildCanonicalRequest(method, path, queryParams, headers, body);
+    hashedCanonicalRequest = SigV4.hashCanonicalRequest(canonicalRequest);
+    credentialScope = SigV4.buildCredentialScope(
         datetime, awsSigV4Client.region, awsSigV4Client.serviceName);
-    final stringToSign = sigV4.buildStringToSign(
+    stringToSign = SigV4.buildStringToSign(
         datetime, credentialScope, hashedCanonicalRequest);
-    final signingKey = sigV4.calculateSigningKey(awsSigV4Client.secretKey,
-        datetime, awsSigV4Client.region, awsSigV4Client.serviceName);
-    final signature = sigV4.calculateSignature(signingKey, stringToSign);
-    return sigV4.buildAuthorizationHeader(
+    signingKey = SigV4.calculateSigningKey(awsSigV4Client.secretKey, datetime,
+        awsSigV4Client.region, awsSigV4Client.serviceName);
+    signature = SigV4.calculateSignature(signingKey, stringToSign);
+    return SigV4.buildAuthorizationHeader(
         awsSigV4Client.accessKey, credentialScope, headers, signature);
   }
 }
