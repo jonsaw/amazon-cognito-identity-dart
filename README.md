@@ -290,7 +290,7 @@ print(credentials.sessionToken);
 
 #### For S3 Uploads
 
-Signing S3 Uploods using HTTP Post.
+Signing S3 Uploads using HTTP Post.
 
 ```dart
 import 'dart:convert';
