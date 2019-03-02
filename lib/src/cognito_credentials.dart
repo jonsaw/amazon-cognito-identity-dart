@@ -14,6 +14,7 @@ class CognitoCredentials {
   String accessKeyId;
   String secretAccessKey;
   String sessionToken;
+  String identityId;
   int expireTime;
   CognitoCredentials(String identityPoolId, CognitoUserPool pool,
       {String region, String userPoolId}) {
@@ -26,17 +27,16 @@ class CognitoCredentials {
 
   /// Get AWS Credentials for authenticated user
   Future<void> getAwsCredentials(token) async {
-    if (expireTime == null ||
-        new DateTime.now().millisecondsSinceEpoch > expireTime - 60000) {
-      final identityId = new CognitoIdentityId(_identityPoolId, _pool);
-      final identityIdId = await identityId.getIdentityId(token);
+    if (expireTime == null || new DateTime.now().millisecondsSinceEpoch > expireTime - 60000) {
+      final idId = new CognitoIdentityId(_identityPoolId, _pool);
+      final idIdId = await idId.getIdentityId(token);
 
       final authenticator = 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
       final Map<String, String> loginParam = {
         authenticator: token,
       };
       final Map<String, dynamic> paramsReq = {
-        'IdentityId': identityIdId,
+        'IdentityId': idIdId,
         'Logins': loginParam,
       };
 
@@ -47,7 +47,7 @@ class CognitoCredentials {
             endpoint: 'https://cognito-identity.$_region.amazonaws.com/');
       } on CognitoClientException catch (e) {
         // remove cached Identity Id and try again
-        await identityId.removeIdentityId();
+        await idId.removeIdentityId();
         if (e.code == 'NotAuthorizedException' && _retryCount < 1) {
           _retryCount++;
           return await getAwsCredentials(token);
@@ -62,7 +62,7 @@ class CognitoCredentials {
       accessKeyId = data['Credentials']['AccessKeyId'];
       secretAccessKey = data['Credentials']['SecretKey'];
       sessionToken = data['Credentials']['SessionToken'];
-
+      identityId = data['IdentityId'];
       expireTime = (data['Credentials']['Expiration']).toInt() * 1000;
     }
   }
