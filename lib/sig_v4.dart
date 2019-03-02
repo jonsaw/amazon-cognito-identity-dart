@@ -149,7 +149,7 @@ class SigV4 {
     return dig.bytes;
   }
 
-  static String hashCanonicalRequest(request) {
+  static String hashCanonicalRequest(String request) {
     return hexEncode(hash(utf8.encode(request)));
   }
 
@@ -168,12 +168,13 @@ class SigV4 {
     });
     sortedQueryParams.sort();
 
-    var canonicalQueryString = '';
+    final List<String> canonicalQueryStrings = [];
     sortedQueryParams.forEach((key) {
-      canonicalQueryString += '$key=${Uri.encodeComponent(queryParams[key])}&';
+      canonicalQueryStrings
+          .add('$key=${Uri.encodeComponent(queryParams[key])}');
     });
 
-    return canonicalQueryString.substring(0, canonicalQueryString.length - 1);
+    return canonicalQueryStrings.join('&');
   }
 
   static String buildCanonicalHeaders(Map<String, String> headers) {
