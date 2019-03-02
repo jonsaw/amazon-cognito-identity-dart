@@ -1,3 +1,6 @@
+## 0.0.22
+- Fix empty canonical query string generation
+
 ## 0.0.21
 - Convert SigV4 methods to static
 - Expose SigV4Client generated values
