@@ -471,7 +471,7 @@ void main() {
   final region = 'ap-southeast-1';
   final service = 's3';
   final key =
-      'my-s3-bucket/ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/squre-cinnamon.jpg';
+      'my-s3-bucket/ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/square-cinnamon.jpg';
   final payload = SigV4.hashCanonicalRequest('');
   final datetime = SigV4.generateDatetime();
   final canonicalRequest = '''GET
