@@ -10,7 +10,8 @@ Need ideas to get started?
 - Authenticated access to:
     - AppSync + GraphQL found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-appsyncs-graphql).
     - API Gateway + Lambda found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-api-gateway--lambda).
-    - S3 found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-s3-uploads).
+    - S3 Presigned Post found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-s3-uploads).
+    - S3 GET Object with Authorization found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-s3-get-object).
 - Follow the tutorial on [Serverless Stack](https://serverless-stack.com/chapters/create-a-cognito-user-pool.html) for best Cognito setup.
 
 Please note that this package is _not_ production ready.
@@ -290,7 +291,7 @@ print(credentials.sessionToken);
 
 #### For S3 Uploads
 
-Signing S3 Uploads using HTTP Post.
+S3 Uploads using HTTP Presigned Post.
 
 ```dart
 import 'dart:convert';
@@ -393,7 +394,6 @@ void main() async {
 
   final stream = http.ByteStream(DelegatingStream.typed(file.openRead()));
   final length = await file.length();
-  print(length);
 
   final uri = Uri.parse(_s3Endpoint);
   final req = http.MultipartRequest("POST", uri);
@@ -430,6 +430,100 @@ void main() async {
   } catch (e) {
     print(e.toString());
   }
+}
+```
+
+#### For S3 GET Object
+
+Signing S3 GET Object using `Authorization` header.
+
+```dart
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'package:amazon_cognito_identity_dart/sig_v4.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  const _awsUserPoolId = 'ap-southeast-1_xxxxxxxx';
+  const _awsClientId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+  const _identityPoolId =
+      'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+  final _userPool = CognitoUserPool(_awsUserPoolId, _awsClientId);
+
+  final _cognitoUser = CognitoUser('+60100000000', _userPool);
+  final authDetails =
+      AuthenticationDetails(username: '+60100000000', password: 'p@ssW0rd');
+
+  CognitoUserSession _session;
+  try {
+    _session = await _cognitoUser.authenticateUser(authDetails);
+  } catch (e) {
+    print(e);
+    return;
+  }
+
+  final _credentials = CognitoCredentials(_identityPoolId, _userPool);
+  await _credentials.getAwsCredentials(_session.getIdToken().getJwtToken());
+
+  final host = 's3.ap-southeast-1.amazonaws.com';
+  final region = 'ap-southeast-1';
+  final service = 's3';
+  final key =
+      'my-s3-bucket/ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/squre-cinnamon.jpg';
+  final payload = SigV4.hashCanonicalRequest('');
+  final datetime = SigV4.generateDatetime();
+  final canonicalRequest = '''GET
+${'/$key'.split('/').map((s) => Uri.encodeComponent(s)).join('/')}
+
+host:$host
+x-amz-content-sha256:$payload
+x-amz-date:$datetime
+x-amz-security-token:${_credentials.sessionToken}
+
+host;x-amz-content-sha256;x-amz-date;x-amz-security-token
+$payload''';
+  final credentialScope =
+      SigV4.buildCredentialScope(datetime, region, service);
+  final stringToSign = SigV4.buildStringToSign(datetime, credentialScope,
+      SigV4.hashCanonicalRequest(canonicalRequest));
+  final signingKey = SigV4.calculateSigningKey(
+      _credentials.secretAccessKey, datetime, region, service);
+  final signature = SigV4.calculateSignature(signingKey, stringToSign);
+
+  final authorization = [
+    'AWS4-HMAC-SHA256 Credential=${_credentials.accessKeyId}/$credentialScope',
+    'SignedHeaders=host;x-amz-content-sha256;x-amz-date;x-amz-security-token',
+    'Signature=$signature',
+  ].join(',');
+
+  final uri = Uri.https(host, key);
+  http.Response response;
+  try {
+    response = await http.get(uri, headers: {
+      'Authorization': authorization,
+      'x-amz-content-sha256': payload,
+      'x-amz-date': datetime,
+      'x-amz-security-token': _credentials.sessionToken,
+    });
+  } catch (e) {
+    print(e);
+    return;
+  }
+
+  final file = File(path.join(
+      '/path/to/my/folder',
+      'square-cinnamon-downloaded.jpg'));
+
+  try {
+    await file.writeAsBytes(response.bodyBytes);
+  } catch (e) {
+    print(e.toString());
+    return;
+  }
+
+  print('complete!');
 }
 ```
 
