@@ -18,10 +18,12 @@ class CognitoUserNewPasswordRequiredException extends CognitoUserException {
   String message;
   dynamic userAttributes;
   List<dynamic> requiredAttributes;
+  String session;
   CognitoUserNewPasswordRequiredException(
       {this.userAttributes,
       this.requiredAttributes,
-      this.message = 'New Password required'});
+      this.message = 'New Password required',
+      this.session});
 }
 
 class CognitoUserMfaRequiredException extends CognitoUserException {

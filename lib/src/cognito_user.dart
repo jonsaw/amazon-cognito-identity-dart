@@ -623,7 +623,8 @@ class CognitoUser {
 
       throw new CognitoUserNewPasswordRequiredException(
           userAttributes: userAttributes,
-          requiredAttributes: requiredAttributes);
+          requiredAttributes: requiredAttributes,
+          session: _session);
     }
     return _authenticateUserInternal(dataAuthenticate, authenticationHelper);
   }
