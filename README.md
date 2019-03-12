@@ -529,6 +529,63 @@ $payload''';
 
 #### For AppSync's GraphQL
 
+Authenticating Amazon Cognito User Pool using JWT Tokens.
+
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+
+void main() async {
+  const _awsUserPoolId = 'ap-southeast-1_xxxxxxxxx';
+  const _awsClientId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+  const _identityPoolId = 'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+  final _userPool = CognitoUserPool(_awsUserPoolId, _awsClientId);
+
+  final _cognitoUser = CognitoUser('+60100000000', _userPool);
+  final authDetails =
+      AuthenticationDetails(username: '+60100000000', password: 'p@ssW0rd');
+
+  CognitoUserSession _session;
+  try {
+    _session = await _cognitoUser.authenticateUser(authDetails);
+  } catch (e) {
+    print(e);
+    return;
+  }
+
+  final _credentials = CognitoCredentials(_identityPoolId, _userPool);
+  await _credentials.getAwsCredentials(_session.getIdToken().getJwtToken());
+
+  final _endpoint =
+      'https://xxxxxxxxxxxxxxxxxxxxxxxxxx.appsync-api.ap-southeast-1.amazonaws.com';
+
+  final body = {
+    'operationName': 'CreateProfile',
+    'query': '''mutation CreateItem {
+        createItem(name: "Some Name") {
+          name
+        }
+      }''',
+  };
+  http.Response response;
+  try {
+    response = await http.post(
+      '$_endpoint/graphql',
+      headers: {
+        'Authorization': _session.getAccessToken().getJwtToken(),
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(body),
+    );
+  } catch (e) {
+    print(e);
+  }
+  print(response.body);
+}
+```
+
 Signing GraphQL requests for authenticated users with IAM Authorization type for access to AppSync data.
 
 ```dart
