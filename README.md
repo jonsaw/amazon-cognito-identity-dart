@@ -562,7 +562,7 @@ void main() async {
       'https://xxxxxxxxxxxxxxxxxxxxxxxxxx.appsync-api.ap-southeast-1.amazonaws.com';
 
   final body = {
-    'operationName': 'CreateProfile',
+    'operationName': 'CreateItem',
     'query': '''mutation CreateItem {
         createItem(name: "Some Name") {
           name
