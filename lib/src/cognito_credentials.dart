@@ -25,13 +25,13 @@ class CognitoCredentials {
   }
 
   /// Get AWS Credentials for authenticated user
-  Future<void> getAwsCredentials(token) async {
+  Future<void> getAwsCredentials(token, [String authenticator]) async {
     if (expireTime == null ||
         new DateTime.now().millisecondsSinceEpoch > expireTime - 60000) {
       final identityId = new CognitoIdentityId(_identityPoolId, _pool);
-      final identityIdId = await identityId.getIdentityId(token);
+      final identityIdId = await identityId.getIdentityId(token, authenticator);
 
-      final authenticator = 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
+      authenticator ??= 'cognito-idp.$_region.amazonaws.com/$_userPoolId';
       final Map<String, String> loginParam = {
         authenticator: token,
       };
