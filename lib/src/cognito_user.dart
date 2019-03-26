@@ -657,6 +657,18 @@ class CognitoUser {
     return data;
   }
 
+  Future<void> completeNewPasswordChallenge(String newPassword) async {
+    final Map<String, String> challengeResponses = {
+      'USERNAME': this.username,
+      'NEW_PASSWORD': newPassword,
+    };
+
+    final data = await respondToChallenge(
+      'NEW_PASSWORD_REQUIRED',
+      challengeResponses
+    );
+  }
+
   /// This is used by the user once he has the responses to a custom challenge
   Future<CognitoUserSession> sendCustomChallengeAnswer(
       String answerChallenge) async {
@@ -665,17 +677,29 @@ class CognitoUser {
       'ANSWER': answerChallenge,
     };
 
+    final data = await respondToChallenge(
+      'CUSTOM_CHALLENGE',
+      challengeResponses
+    );
+
     final authenticationHelper =
         new AuthenticationHelper(pool.getUserPoolId().split('_')[1]);
 
+    return _authenticateUserInternal(data, authenticationHelper);
+  }
+
+  Future<dynamic> respondToChallenge(
+      String challengeName,
+      Map<String, String> responses
+  ) async {
     getCachedDeviceKeyAndPassword();
     if (_deviceKey != null) {
-      challengeResponses['DEVICE_KEY'] = _deviceKey;
+      responses['DEVICE_KEY'] = _deviceKey;
     }
 
     final Map<String, dynamic> paramsReq = {
-      'ChallengeName': 'CUSTOM_CHALLENGE',
-      'ChallengeResponses': challengeResponses,
+      'ChallengeName': challengeName,
+      'ChallengeResponses': responses,
       'ClientId': this.pool.getClientId(),
       'Session': _session,
     };
@@ -684,9 +708,7 @@ class CognitoUser {
       paramsReq['UserContextData'] = getUserContextData();
     }
 
-    final data = await client.request('RespondToAuthChallenge', paramsReq);
-
-    return _authenticateUserInternal(data, authenticationHelper);
+    return await client.request('RespondToAuthChallenge', paramsReq);
   }
 
   /// This is used by the user once he has an MFA code
