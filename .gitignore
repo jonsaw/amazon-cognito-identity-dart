@@ -25,3 +25,6 @@ example/test
 
 # Ignore coverage results
 coverage/
+
+# Ignore OS logs/store
+.DS_Store
