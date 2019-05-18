@@ -435,6 +435,8 @@ class CognitoUser {
       return await _authenticateUserPlainUsernamePassword(authDetails);
     } else if (authenticationFlowType == 'USER_SRP_AUTH') {
       return await _authenticateUserDefaultAuth(authDetails);
+    } else if (authenticationFlowType == 'CUSTOM_AUTH') {
+      return await _authenticateUserCustomAuth(authDetails);
     }
     throw new UnimplementedError('Authentication flow type is not supported.');
   }
@@ -487,6 +489,39 @@ class CognitoUser {
       paramsReq['UserContextData'] = getUserContextData();
     }
     final authResult = await client.request('InitiateAuth', paramsReq);
+
+    return _authenticateUserInternal(authResult, authenticationHelper);
+  }
+
+  Future<CognitoUserSession> _authenticateUserCustomAuth(
+    AuthenticationDetails authDetails,
+    ) async {
+    final authenticationHelper = new AuthenticationHelper(
+      pool.getUserPoolId().split('_')[1],
+    );
+
+    Map<String, String> authParameters = {};
+    if (_deviceKey != null) {
+      authParameters['DEVICE_KEY'] = _deviceKey;
+    }
+    authParameters['USERNAME'] = username;
+
+    final srpA = authenticationHelper.getLargeAValue();
+    authParameters['SRP_A'] = srpA.toRadixString(16);
+    authParameters['CHALLENGE_NAME'] = 'SRP_A';
+
+    Map<String, dynamic> params = {
+      'AuthFlow': authenticationFlowType,
+      'ClientId': pool.getClientId(),
+      'AuthParameters': authParameters,
+      'ClientMetadata': authDetails.getValidationData(),
+    };
+
+    if (getUserContextData() != null) {
+      params['UserContextData'] = getUserContextData();
+    }
+
+    final authResult = await client.request('InitiateAuth', params);
 
     return _authenticateUserInternal(authResult, authenticationHelper);
   }
