@@ -218,7 +218,7 @@ class SigV4 {
       String path,
       Map<String, String> queryParams,
       Map<String, String> headers,
-      String payload) {
+      String payload, [bool hasPayload = true]) {
     List<String> canonicalRequest = [
       method,
       buildCanonicalUri(path),
@@ -226,6 +226,7 @@ class SigV4 {
       buildCanonicalHeaders(headers),
       buildCanonicalSignedHeaders(headers),
       hexEncode(hash(utf8.encode(payload))),
+      if (hasPayload) hexEncode(hash(utf8.encode(payload))) else payload,
     ];
     return canonicalRequest.join('\n');
   }
