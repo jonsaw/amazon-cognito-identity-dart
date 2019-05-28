@@ -225,7 +225,6 @@ class SigV4 {
       buildCanonicalQueryString(queryParams),
       buildCanonicalHeaders(headers),
       buildCanonicalSignedHeaders(headers),
-      hexEncode(hash(utf8.encode(payload))),
       if (hasPayload) hexEncode(hash(utf8.encode(payload))) else payload,
     ];
     return canonicalRequest.join('\n');
