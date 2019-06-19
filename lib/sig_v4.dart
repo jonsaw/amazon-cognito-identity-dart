@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
-const _aws_sha_256 = 'AWS4-HMAC-SHA256';
+const aws_sha_256 = 'AWS4-HMAC-SHA256';
 const _aws4_request = 'aws4_request';
 const _aws4 = 'AWS4';
 const _x_amz_date = 'x-amz-date';
@@ -218,14 +218,14 @@ class SigV4 {
       String path,
       Map<String, String> queryParams,
       Map<String, String> headers,
-      String payload) {
+      String payload, [bool signPayload = true]) {
     List<String> canonicalRequest = [
       method,
       buildCanonicalUri(path),
       buildCanonicalQueryString(queryParams),
       buildCanonicalHeaders(headers),
       buildCanonicalSignedHeaders(headers),
-      hexEncode(hash(utf8.encode(payload))),
+      if (signPayload) hexEncode(hash(utf8.encode(payload))) else payload,
     ];
     return canonicalRequest.join('\n');
   }
