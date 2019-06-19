@@ -527,6 +527,98 @@ $payload''';
 }
 ```
 
+#### For PreSign S3 url
+
+
+```dart
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'package:amazon_cognito_identity_dart/sig_v4.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  const _awsUserPoolId = 'ap-southeast-1_xxxxxxxx';
+  const _awsClientId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+  const _identityPoolId =
+      'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+  final _userPool = CognitoUserPool(_awsUserPoolId, _awsClientId);
+
+  final _cognitoUser = CognitoUser('+60100000000', _userPool);
+  final authDetails =
+      AuthenticationDetails(username: '+60100000000', password: 'p@ssW0rd');
+
+  CognitoUserSession _session;
+  try {
+    _session = await _cognitoUser.authenticateUser(authDetails);
+  } catch (e) {
+    print(e);
+    return;
+  }
+
+  final _credentials = CognitoCredentials(_identityPoolId, _userPool);
+  await _credentials.getAwsCredentials(_session.getIdToken().getJwtToken());
+
+  final service = 's3';
+  final region = 'ap-southeast-1';
+  final bucket = 'bucket-name'
+  final host = '$bucket.$service.$region.amazonaws.com';
+  final headers = {"Host": host};
+  final key = 'public/square-cinnamon.jpg';
+
+  Map<String, String> params = {};
+
+  final datetime = SigV4.generateDatetime();
+  final credentialScope = SigV4.buildCredentialScope(datetime, region, service);
+
+  params['X-Amz-Security-Token'] = _credentials.sessionToken;
+  params['X-Amz-Algorithm'] = aws_sha_256;
+  params['X-Amz-Date'] = datetime;
+  params['X-Amz-SignedHeaders'] = SigV4.buildCanonicalSignedHeaders(headers);
+  params['X-Amz-Expires'] = '3599';
+  params['X-Amz-Credential'] = '${credentials.accessKeyId}/$credentialScope';
+
+  final canonicalRequest = SigV4.buildCanonicalRequest(
+      'GET',
+      '/$key',
+      params,
+      headers,
+      'UNSIGNED-PAYLOAD', false);
+
+  final stringToSign = SigV4.buildStringToSign(datetime, credentialScope, SigV4.hashCanonicalRequest(canonicalRequest));
+
+  final signingKey = SigV4.calculateSigningKey(_credentials.secretAccessKey, datetime, region, service);
+  final signature = SigV4.calculateSignature(signingKey, stringToSign);
+
+  params['X-Amz-Signature'] = signature;
+
+  final url = 'https://$host${'/$key'.split('/').map((s) => Uri.encodeComponent(s)).join('/')}?'
+    + params.keys.map((key) => '$key=${Uri.encodeComponent(params[key])}').join('&');
+
+  http.Response response;
+  try {
+    response = await http.get(url);
+  } catch (e) {
+    print(e);
+    return;
+  }
+
+  final file = File(path.join(
+      '/path/to/my/folder',
+      'square-cinnamon-downloaded.jpg'));
+
+  try {
+    await file.writeAsBytes(response.bodyBytes);
+  } catch (e) {
+    print(e.toString());
+    return;
+  }
+
+  print('complete!');
+}
+```
+
 #### For AppSync's GraphQL
 
 Authenticating Amazon Cognito User Pool using JWT Tokens.
