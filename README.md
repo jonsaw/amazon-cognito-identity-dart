@@ -13,6 +13,7 @@ Need ideas to get started?
     - S3 Presigned Post found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-s3-uploads).
     - S3 GET Object with Authorization found [here](https://github.com/jonsaw/amazon-cognito-identity-dart/#for-s3-get-object).
 - Follow the tutorial on [Serverless Stack](https://serverless-stack.com/chapters/create-a-cognito-user-pool.html) for best Cognito setup.
+Note: When creating the App, the generate client secret box must be unchecked.
 
 Please note that this package is _not_ production ready.
 
