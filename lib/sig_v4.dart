@@ -9,7 +9,7 @@ const _x_amz_date = 'x-amz-date';
 const _x_amz_security_token = 'x-amz-security-token';
 const _host = 'host';
 const _authorization = 'Authorization';
-const _default_content_type = 'application/json';
+const _default_content_type = 'application/json; charset=utf-8';
 const _default_accept_type = 'application/json';
 
 class AwsSigV4Client {
