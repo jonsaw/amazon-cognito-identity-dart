@@ -14,10 +14,11 @@ class Client {
     String region,
     String service = 'AWSCognitoIdentityProviderService',
     http.Client client,
+    String userAgent = 'aws-amplify/0.0.x dart',
   }) {
     this._region = region;
     this._service = service;
-    this._userAgent = 'aws-amplify/0.0.x dart';
+    this._userAgent = userAgent;
     this.endpoint = endpoint ?? 'https://cognito-idp.$_region.amazonaws.com/';
     this._client = client;
     if (this._client == null) {
