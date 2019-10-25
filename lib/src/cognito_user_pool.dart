@@ -23,27 +23,33 @@ class CognitoUserPoolData {
 class CognitoUserPool {
   String _userPoolId;
   String _clientId;
+  String _clientSecret;
   String _region;
   bool advancedSecurityDataCollectionFlag;
   Client client;
   CognitoStorage storage;
+  String _userAgent;
 
   CognitoUserPool(
     String userPoolId,
     String clientId, {
+    String clientSecret,
     String endpoint,
     Client customClient,
+    String customUserAgent,  
     this.storage,
     this.advancedSecurityDataCollectionFlag = true,
   }) {
     _userPoolId = userPoolId;
     _clientId = clientId;
+    _clientSecret = clientSecret;
     RegExp regExp = new RegExp(r'^[\w-]+_.+$');
     if (!regExp.hasMatch(userPoolId)) {
       throw new ArgumentError('Invalid userPoolId format.');
     }
     _region = userPoolId.split('_')[0];
-    client = new Client(region: _region, endpoint: endpoint);
+    _userAgent = customUserAgent;
+    client = new Client(region: _region, endpoint: endpoint, userAgent: _userAgent);
 
     if (customClient != null) {
       client = customClient;
@@ -77,6 +83,8 @@ class CognitoUserPool {
         lastAuthUser,
         this,
         storage: this.storage,
+        clientSecret: _clientSecret,
+        deviceName: _userAgent
       );
     }
 
@@ -108,12 +116,16 @@ class CognitoUserPool {
       'ValidationData': validationData,
     };
 
+    if (_clientSecret != null) {
+      params['SecretHash'] = CognitoUser.calculateClientSecretHash(username, _clientId, _clientSecret);
+    }
+
     final data = await this.client.request('SignUp', params);
     if (data == null) {
       return null;
     }
     return CognitoUserPoolData.fromData(
-      CognitoUser(username, this, storage: storage),
+      CognitoUser(username, this, storage: storage, clientSecret: _clientSecret, deviceName: _userAgent),
       data,
     );
   }
