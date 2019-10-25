@@ -118,10 +118,10 @@ class AuthenticationHelper {
   }
 
   /// Generate salts and compute verifier.
-  void generateHashDevice(String deviceGroupKey, String username) {
+  void generateHashDevice(String deviceGroupKey, String deviceKey) {
     _randomPassword = this.generateRandomString();
     final String combinedString =
-        '`$deviceGroupKey$username:${this._randomPassword}';
+        '$deviceGroupKey$deviceKey:${this._randomPassword}';
     final String hashedString = this.hash(utf8.encode(combinedString));
 
     final String hexRandom = new RandomString().generate(length: 16);
