@@ -103,7 +103,9 @@ try {
   // handle CUSTOM_CHALLENGE challenge
 } on CognitoUserConfirmationNecessaryException catch (e) {
   // handle User Confirmation Necessary
-} catch (e) {
+} on CognitoClientException catch (e) {
+  // handle Wrong Username and Password and Cognito Client
+}catch (e) {
   print(e);
 }
 print(session.getAccessToken().getJwtToken());
