@@ -29,7 +29,7 @@ class AwsSigV4Client {
       this.defaultContentType = _default_content_type,
       this.defaultAcceptType = _default_accept_type}) {
     final parsedUri = Uri.parse(endpoint);
-    this.endpoint = '${parsedUri.scheme}://${parsedUri.host}';
+    this.endpoint = '${parsedUri.scheme}://${parsedUri.host}:${parsedUri.port}';
     this.pathComponent = parsedUri.path;
   }
 }
