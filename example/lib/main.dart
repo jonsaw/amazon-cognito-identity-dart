@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'package:amazon_cognito_identity_dart/sig_v4.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Setup AWS User Pool Id & Client Id settings here:
 const _awsUserPoolId = 'ap-southeast-1_xxxxxxxxx';
@@ -14,8 +15,7 @@ const _identityPoolId = 'ap-southeast-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
 
 // Setup endpoints here:
 const _region = 'ap-southeast-1';
-const _endpoint =
-    'https://xxxxxxxxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
+const _endpoint = 'https://xxxxxxxxxx.execute-api.ap-southeast-1.amazonaws.com/dev';
 
 final userPool = new CognitoUserPool(_awsUserPoolId, _awsClientId);
 
@@ -96,19 +96,15 @@ class CounterService {
 
   /// Retrieve user's previous count from Lambda + DynamoDB
   Future<Counter> getCounter() async {
-    final signedRequest =
-        new SigV4Request(awsSigV4Client, method: 'GET', path: '/counter');
-    final response =
-        await http.get(signedRequest.url, headers: signedRequest.headers);
+    final signedRequest = new SigV4Request(awsSigV4Client, method: 'GET', path: '/counter');
+    final response = await http.get(Uri.parse(signedRequest.url), headers: signedRequest.headers);
     return new Counter.fromJson(json.decode(response.body));
   }
 
   /// Increment user's count in DynamoDB
   Future<Counter> incrementCounter() async {
-    final signedRequest =
-        new SigV4Request(awsSigV4Client, method: 'PUT', path: '/counter');
-    final response =
-        await http.put(signedRequest.url, headers: signedRequest.headers);
+    final signedRequest = new SigV4Request(awsSigV4Client, method: 'PUT', path: '/counter');
+    final response = await http.put(Uri.parse(signedRequest.url), headers: signedRequest.headers);
     return new Counter.fromJson(json.decode(response.body));
   }
 }
@@ -163,8 +159,7 @@ class UserService {
 
   /// Login user
   Future<User> login(String email, String password) async {
-    _cognitoUser =
-        new CognitoUser(email, _userPool, storage: _userPool.storage);
+    _cognitoUser = new CognitoUser(email, _userPool, storage: _userPool.storage);
 
     final authDetails = new AuthenticationDetails(
       username: email,
@@ -197,16 +192,14 @@ class UserService {
 
   /// Confirm user's account with confirmation code sent to email
   Future<bool> confirmAccount(String email, String confirmationCode) async {
-    _cognitoUser =
-        new CognitoUser(email, _userPool, storage: _userPool.storage);
+    _cognitoUser = new CognitoUser(email, _userPool, storage: _userPool.storage);
 
     return await _cognitoUser.confirmRegistration(confirmationCode);
   }
 
   /// Resend confirmation code to user's email
   Future<void> resendConfirmationCode(String email) async {
-    _cognitoUser =
-        new CognitoUser(email, _userPool, storage: _userPool.storage);
+    _cognitoUser = new CognitoUser(email, _userPool, storage: _userPool.storage);
     await _cognitoUser.resendConfirmationCode();
   }
 
@@ -224,8 +217,7 @@ class UserService {
     final userAttributes = [
       new AttributeArg(name: 'name', value: name),
     ];
-    data =
-        await _userPool.signUp(email, password, userAttributes: userAttributes);
+    data = await _userPool.signUp(email, password, userAttributes: userAttributes);
 
     final user = new User();
     user.email = email;
@@ -282,8 +274,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             new Container(
-              padding:
-                  new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+              padding: new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
               width: screenSize.width,
               child: new RaisedButton(
                 child: new Text(
@@ -293,16 +284,14 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    new MaterialPageRoute(
-                        builder: (context) => new SignUpScreen()),
+                    new MaterialPageRoute(builder: (context) => new SignUpScreen()),
                   );
                 },
                 color: Colors.blue,
               ),
             ),
             new Container(
-              padding:
-                  new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+              padding: new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
               width: screenSize.width,
               child: new RaisedButton(
                 child: new Text(
@@ -312,16 +301,14 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    new MaterialPageRoute(
-                        builder: (context) => new ConfirmationScreen()),
+                    new MaterialPageRoute(builder: (context) => new ConfirmationScreen()),
                   );
                 },
                 color: Colors.blue,
               ),
             ),
             new Container(
-              padding:
-                  new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+              padding: new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
               width: screenSize.width,
               child: new RaisedButton(
                 child: new Text(
@@ -331,16 +318,14 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    new MaterialPageRoute(
-                        builder: (context) => new LoginScreen()),
+                    new MaterialPageRoute(builder: (context) => new LoginScreen()),
                   );
                 },
                 color: Colors.blue,
               ),
             ),
             new Container(
-              padding:
-                  new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+              padding: new EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
               width: screenSize.width,
               child: new RaisedButton(
                 child: new Text(
@@ -350,8 +335,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    new MaterialPageRoute(
-                        builder: (context) => new SecureCounterScreen()),
+                    new MaterialPageRoute(builder: (context) => new SecureCounterScreen()),
                   );
                 },
                 color: Colors.blue,
@@ -405,9 +389,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             if (!_user.confirmed) {
               Navigator.push(
                 context,
-                new MaterialPageRoute(
-                    builder: (context) =>
-                        new ConfirmationScreen(email: _user.email)),
+                new MaterialPageRoute(builder: (context) => new ConfirmationScreen(email: _user.email)),
               );
             }
           }
@@ -445,8 +427,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   new ListTile(
                     leading: const Icon(Icons.email),
                     title: new TextFormField(
-                      decoration: new InputDecoration(
-                          hintText: 'example@inspire.my', labelText: 'Email'),
+                      decoration: new InputDecoration(hintText: 'example@inspire.my', labelText: 'Email'),
                       keyboardType: TextInputType.emailAddress,
                       onSaved: (String email) {
                         _user.email = email;
@@ -512,8 +493,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     bool accountConfirmed;
     String message;
     try {
-      accountConfirmed =
-          await _userService.confirmAccount(_user.email, confirmationCode);
+      accountConfirmed = await _userService.confirmAccount(_user.email, confirmationCode);
       message = 'Account successfully confirmed!';
     } on CognitoClientException catch (e) {
       if (e.code == 'InvalidParameterException' ||
@@ -538,8 +518,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
             Navigator.pop(context);
             Navigator.push(
               context,
-              new MaterialPageRoute(
-                  builder: (context) => new LoginScreen(email: _user.email)),
+              new MaterialPageRoute(builder: (context) => new LoginScreen(email: _user.email)),
             );
           }
         },
@@ -597,9 +576,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
                         leading: const Icon(Icons.email),
                         title: new TextFormField(
                           initialValue: widget.email,
-                          decoration: new InputDecoration(
-                              hintText: 'example@inspire.my',
-                              labelText: 'Email'),
+                          decoration: new InputDecoration(hintText: 'example@inspire.my', labelText: 'Email'),
                           keyboardType: TextInputType.emailAddress,
                           onSaved: (String email) {
                             _user.email = email;
@@ -609,8 +586,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
                       new ListTile(
                         leading: const Icon(Icons.lock),
                         title: new TextFormField(
-                          decoration: new InputDecoration(
-                              labelText: 'Confirmation Code'),
+                          decoration: new InputDecoration(labelText: 'Confirmation Code'),
                           onSaved: (String code) {
                             confirmationCode = code;
                           },
@@ -704,9 +680,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (!_user.confirmed) {
               Navigator.push(
                 context,
-                new MaterialPageRoute(
-                    builder: (context) =>
-                        new ConfirmationScreen(email: _user.email)),
+                new MaterialPageRoute(builder: (context) => new ConfirmationScreen(email: _user.email)),
               );
             }
           }
@@ -743,9 +717,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             leading: const Icon(Icons.email),
                             title: new TextFormField(
                               initialValue: widget.email,
-                              decoration: new InputDecoration(
-                                  hintText: 'example@inspire.my',
-                                  labelText: 'Email'),
+                              decoration: new InputDecoration(hintText: 'example@inspire.my', labelText: 'Email'),
                               keyboardType: TextInputType.emailAddress,
                               onSaved: (String email) {
                                 _user.email = email;
@@ -755,8 +727,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           new ListTile(
                             leading: const Icon(Icons.lock),
                             title: new TextFormField(
-                              decoration:
-                                  new InputDecoration(labelText: 'Password'),
+                              decoration: new InputDecoration(labelText: 'Password'),
                               obscureText: true,
                               onSaved: (String password) {
                                 _user.password = password;
@@ -788,8 +759,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             );
           }
-          return new Scaffold(
-              appBar: new AppBar(title: new Text('Loading...')));
+          return new Scaffold(appBar: new AppBar(title: new Text('Loading...')));
         });
   }
 }
@@ -826,8 +796,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
 
         // get session credentials
         final credentials = await _userService.getCredentials();
-        _awsSigV4Client = new AwsSigV4Client(
-            credentials.accessKeyId, credentials.secretAccessKey, _endpoint,
+        _awsSigV4Client = new AwsSigV4Client(credentials.accessKeyId, credentials.secretAccessKey, _endpoint,
             region: _region, sessionToken: credentials.sessionToken);
 
         // get previous count
@@ -901,8 +870,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
               ),
             );
           }
-          return new Scaffold(
-              appBar: new AppBar(title: new Text('Loading...')));
+          return new Scaffold(appBar: new AppBar(title: new Text('Loading...')));
         });
   }
 }
