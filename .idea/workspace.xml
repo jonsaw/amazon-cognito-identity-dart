@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8a0e7c1a-393f-4a08-8ec9-9477edafafd8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/sig_v4.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/sig_v4.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/authentication_helper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/authentication_helper.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/client.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/cognito_user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/cognito_user.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

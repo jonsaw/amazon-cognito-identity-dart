@@ -6,15 +6,16 @@ description: Unofficial Amazon Cognito Identity Provider Dart SDK,
   to easily add user sign-up and sign-in to your mobile and web apps
   with AWS Cloud Services.
 
+environment:
+  sdk: '>=2.10.0 <3.0.0'
+
 dependencies:
   crypto: ^3.0.1
   http: ^0.13.1
   convert: ^3.0.0
 
-#dev_dependencies:
-#  flutter_test:
-#    sdk: flutter
-#  test: ^1.4.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: ^1.4.0
 
-environment:
-  sdk: ">=2.1.0 <3.0.0"
