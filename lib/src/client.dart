@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import 'cognito_client_exceptions.dart';
 
 class Client {
@@ -26,8 +28,7 @@ class Client {
   }
 
   /// Makes requests on AWS API service provider
-  request(String operation, Map<String, dynamic> params,
-      {String endpoint, String service}) async {
+  request(String operation, Map<String, dynamic> params, {String endpoint, String service}) async {
     final endpointReq = endpoint ?? this.endpoint;
     final targetService = service ?? _service;
     final body = json.encode(params);
@@ -41,7 +42,7 @@ class Client {
     http.Response response;
     try {
       response = await _client.post(
-        endpointReq,
+        Uri.parse(endpointReq),
         headers: headersReq,
         body: body,
       );
@@ -78,8 +79,7 @@ class Client {
       }
       final String dataType = data['__type'];
       final String dataCode = data['code'];
-      final String code =
-          (dataType ?? dataCode ?? errorType).split('#').removeLast();
+      final String code = (dataType ?? dataCode ?? errorType).split('#').removeLast();
       throw new CognitoClientException(
         data['message'] ?? 'Cognito client request error with unknown message',
         code: code,

@@ -1,5 +1,8 @@
 import 'dart:convert';
+
+import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+
 import 'random_string_helper.dart';
 
 final String initN = 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1' +
@@ -19,8 +22,7 @@ final String initN = 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1' +
     'BBE117577A615D6C770988C0BAD946E208E24FA074E5AB31' +
     '43DB5BFCE0FD108E4B82D120A93AD2CAFFFFFFFFFFFFFFFF';
 
-final String _newPasswordRequiredChallengeUserAttributePrefix =
-    'userAttributes.';
+final String _newPasswordRequiredChallengeUserAttributePrefix = 'userAttributes.';
 
 class AuthenticationHelper {
   String poolName;
@@ -77,8 +79,7 @@ class AuthenticationHelper {
   }
 
   /// Calculates the final hkdf based on computed S value, and computed U value and the key
-  List<int> getPasswordAuthenticationKey(
-      String username, String password, BigInt serverBValue, BigInt salt) {
+  List<int> getPasswordAuthenticationKey(String username, String password, BigInt serverBValue, BigInt salt) {
     if (serverBValue % N == BigInt.zero) {
       throw new ArgumentError('B cannot be zero.');
     }
@@ -89,13 +90,11 @@ class AuthenticationHelper {
 
     final String usernamePassword = '${this.poolName}${username}:${password}';
     final String usernamePasswordHash = hash(utf8.encode(usernamePassword));
-    final xValue =
-        BigInt.parse(hexHash(padHex(salt) + usernamePasswordHash), radix: 16);
+    final xValue = BigInt.parse(hexHash(padHex(salt) + usernamePasswordHash), radix: 16);
 
     final sValue = calculateS(xValue, serverBValue);
 
-    List<int> hkdf =
-        computehkdf(hex.decode(padHex(sValue)), hex.decode(padHex(_uValue)));
+    List<int> hkdf = computehkdf(hex.decode(padHex(sValue)), hex.decode(padHex(_uValue)));
 
     return hkdf;
   }
@@ -119,8 +118,7 @@ class AuthenticationHelper {
   /// Generate salts and compute verifier.
   void generateHashDevice(String deviceGroupKey, String username) {
     _randomPassword = this.generateRandomString();
-    final String combinedString =
-        '`$deviceGroupKey$username:${this._randomPassword}';
+    final String combinedString = '`$deviceGroupKey$username:${this._randomPassword}';
     final String hashedString = this.hash(utf8.encode(combinedString));
 
     final String hexRandom = new RandomString().generate(length: 16);
@@ -199,8 +197,7 @@ class AuthenticationHelper {
   List<int> computehkdf(List<int> ikm, List<int> salt) {
     Hmac hmac1 = new Hmac(sha256, salt);
     Digest prk = hmac1.convert(ikm);
-    List<int> infoBitsUpdate = new List.from(_infoBits)
-      ..addAll(utf8.encode(String.fromCharCode(1)));
+    List<int> infoBitsUpdate = new List.from(_infoBits)..addAll(utf8.encode(String.fromCharCode(1)));
     Hmac hmac2 = new Hmac(sha256, prk.bytes);
     Digest dig = hmac2.convert(infoBitsUpdate);
     return dig.bytes.getRange(0, 16).toList();
