@@ -10,9 +10,9 @@ environment:
   sdk: '>=2.10.5 <3.0.0'
 
 dependencies:
+  convert: ^3.0.0
   crypto: ^3.0.1
   http: ^0.13.1
-  convert: ^3.0.0
 
 #dev_dependencies:
 #  flutter_test:
