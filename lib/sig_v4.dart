@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
 const _aws_sha_256 = 'AWS4-HMAC-SHA256';
