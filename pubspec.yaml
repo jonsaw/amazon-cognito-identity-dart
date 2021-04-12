@@ -10,10 +10,10 @@ dependencies:
   crypto: ^3.0.1
   http: ^0.13.1
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  test: ^1.4.0
+#dev_dependencies:
+#  flutter_test:
+#    sdk: flutter
+#  test: ^1.4.0
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
