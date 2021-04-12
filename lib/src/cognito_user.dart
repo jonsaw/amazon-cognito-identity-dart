@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'attribute_arg.dart';
 import 'cognito_user_attribute.dart';
