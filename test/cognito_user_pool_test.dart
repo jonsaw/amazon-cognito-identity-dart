@@ -28,7 +28,7 @@ void main() {
     final cup = CognitoUserPool(
         'ap-southeast-1_nnnnnnnnn', 'nnnnnnnnnnnnnnnnnnnnnnnnnn');
     expect(
-      cup.client.endpoint,
+      cup.client!.endpoint,
       equals('https://cognito-idp.ap-southeast-1.amazonaws.com/'),
     );
   });
@@ -54,7 +54,7 @@ void main() {
       customClient: c,
     );
     final Map<String, dynamic> data =
-        await cup.client.request('TestOperation', {
+        await cup.client!.request('TestOperation', {
       'color': 'Green',
     });
     expect(data['it'], equals('works'));

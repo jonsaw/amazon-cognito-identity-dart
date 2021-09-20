@@ -33,7 +33,7 @@ void main() {
   test('.generateHashDevice() generates verifierDevices', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');
     h.generateHashDevice('macbook:key', 'see.saw@email.com');
-    expect(h.getVerifierDevices().length, anyOf([766, 768, 770]));
+    expect(h.getVerifierDevices()!.length, anyOf([766, 768, 770]));
   });
   test('.padHex() with odd length pads left', () {
     final AuthenticationHelper h = new AuthenticationHelper('pool_name');

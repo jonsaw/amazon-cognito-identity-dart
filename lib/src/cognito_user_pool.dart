@@ -6,8 +6,8 @@ import 'cognito_user.dart';
 
 class CognitoUserPoolData {
   CognitoUser user;
-  bool userConfirmed;
-  String userSub;
+  bool? userConfirmed;
+  String? userSub;
   CognitoUserPoolData(this.user, {this.userConfirmed, this.userSub});
 
   factory CognitoUserPoolData.fromData(
@@ -21,18 +21,18 @@ class CognitoUserPoolData {
 }
 
 class CognitoUserPool {
-  String _userPoolId;
-  String _clientId;
-  String _region;
+  String? _userPoolId;
+  String? _clientId;
+  String? _region;
   bool advancedSecurityDataCollectionFlag;
-  Client client;
-  CognitoStorage storage;
+  Client? client;
+  CognitoStorage? storage;
 
   CognitoUserPool(
     String userPoolId,
     String clientId, {
-    String endpoint,
-    Client customClient,
+    String? endpoint,
+    Client? customClient,
     this.storage,
     this.advancedSecurityDataCollectionFlag = true,
   }) {
@@ -55,23 +55,23 @@ class CognitoUserPool {
     }
   }
 
-  String getUserPoolId() {
+  String? getUserPoolId() {
     return _userPoolId;
   }
 
-  String getClientId() {
+  String? getClientId() {
     return _clientId;
   }
 
-  String getRegion() {
+  String? getRegion() {
     return _region;
   }
 
-  Future<CognitoUser> getCurrentUser() async {
+  Future<CognitoUser?> getCurrentUser() async {
     final lastUserKey =
         'CognitoIdentityServiceProvider.$_clientId.LastAuthUser';
 
-    final lastAuthUser = await storage.getItem(lastUserKey);
+    final lastAuthUser = await storage!.getItem(lastUserKey);
     if (lastAuthUser != null) {
       return new CognitoUser(
         lastAuthUser,
@@ -88,7 +88,7 @@ class CognitoUserPool {
   /// data on their client. Please refer to documentation to know more about using AdvancedSecurity
   /// features
   /// TODO: not supported at the moment
-  String getUserContextData(String username) {
+  String? getUserContextData(String? username) {
     return null;
   }
 
@@ -97,8 +97,8 @@ class CognitoUserPool {
   Future<CognitoUserPoolData> signUp(
     String username,
     String password, {
-    List<AttributeArg> userAttributes,
-    List<AttributeArg> validationData,
+    List<AttributeArg>? userAttributes,
+    List<AttributeArg>? validationData,
   }) async {
     final Map<String, dynamic> params = {
       'ClientId': _clientId,
@@ -108,7 +108,7 @@ class CognitoUserPool {
       'ValidationData': validationData,
     };
 
-    final data = await this.client.request('SignUp', params);
+    final data = await this.client!.request('SignUp', params);
     if (data == null) {
       return null;
     }

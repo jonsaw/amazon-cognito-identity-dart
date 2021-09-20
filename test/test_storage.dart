@@ -13,7 +13,7 @@ class TestCustomStorage extends CognitoStorage {
 
   getItem(String key) async {
     if (testStorage[prefix + key] != null) {
-      return json.decode(testStorage[prefix + key]);
+      return json.decode(testStorage[prefix + key]!);
     }
     return null;
   }
