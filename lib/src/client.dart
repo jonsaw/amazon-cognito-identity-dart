@@ -1,19 +1,21 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import 'cognito_client_exceptions.dart';
 
 class Client {
-  String _service;
-  String _userAgent;
-  String _region;
-  String endpoint;
-  http.Client _client;
+  String? _service;
+  late String _userAgent;
+  String? _region;
+  String? endpoint;
+  http.Client? _client;
 
   Client({
-    String endpoint,
-    String region,
+    String? endpoint,
+    String? region,
     String service = 'AWSCognitoIdentityProviderService',
-    http.Client client,
+    http.Client? client,
   }) {
     this._region = region;
     this._service = service;
@@ -26,9 +28,8 @@ class Client {
   }
 
   /// Makes requests on AWS API service provider
-  request(String operation, Map<String, dynamic> params,
-      {String endpoint, String service}) async {
-    final endpointReq = endpoint ?? this.endpoint;
+  request(String operation, Map<String, dynamic> params, {String? endpoint, String? service}) async {
+    final endpointReq = endpoint ?? this.endpoint!;
     final targetService = service ?? _service;
     final body = json.encode(params);
 
@@ -40,8 +41,8 @@ class Client {
 
     http.Response response;
     try {
-      response = await _client.post(
-        endpointReq,
+      response = await _client!.post(
+        Uri.parse(endpointReq),
         headers: headersReq,
         body: body,
       );
@@ -64,7 +65,7 @@ class Client {
       String errorType = 'UnknownError';
       for (String header in response.headers.keys) {
         if (header.toLowerCase() == 'x-amzn-errortype') {
-          errorType = response.headers[header].split(':')[0];
+          errorType = response.headers[header]!.split(':')[0];
           break;
         }
       }
@@ -76,10 +77,9 @@ class Client {
           statusCode: response.statusCode,
         );
       }
-      final String dataType = data['__type'];
-      final String dataCode = data['code'];
-      final String code =
-          (dataType ?? dataCode ?? errorType).split('#').removeLast();
+      final String? dataType = data['__type'];
+      final String? dataCode = data['code'];
+      final String code = (dataType ?? dataCode ?? errorType).split('#').removeLast();
       throw new CognitoClientException(
         data['message'] ?? 'Cognito client request error with unknown message',
         code: code,

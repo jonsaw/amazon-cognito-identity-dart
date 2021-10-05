@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
@@ -13,12 +14,12 @@ const _default_content_type = 'application/json';
 const _default_accept_type = 'application/json';
 
 class AwsSigV4Client {
-  String endpoint;
-  String pathComponent;
+  late String endpoint;
+  String? pathComponent;
   String region;
   String accessKey;
   String secretKey;
-  String sessionToken;
+  String? sessionToken;
   String serviceName;
   String defaultContentType;
   String defaultAcceptType;
@@ -35,27 +36,27 @@ class AwsSigV4Client {
 }
 
 class SigV4Request {
-  String method;
-  String path;
-  Map<String, String> queryParams;
-  Map<String, String> headers;
-  String url;
-  String body;
+  String? method;
+  late String path;
+  Map<String, String>? queryParams;
+  Map<String, String?> headers;
+  String? url;
+  late String body;
   AwsSigV4Client awsSigV4Client;
-  String canonicalRequest;
-  String hashedCanonicalRequest;
-  String credentialScope;
-  String stringToSign;
+  late String canonicalRequest;
+  String? hashedCanonicalRequest;
+  String? credentialScope;
+  late String stringToSign;
   String datetime;
-  List<int> signingKey;
-  String signature;
+  late List<int> signingKey;
+  late String signature;
   SigV4Request(
     this.awsSigV4Client, {
-    String method,
-    String path,
-    this.datetime,
+    required String method,
+    String? path,
+    required this.datetime,
     this.queryParams,
-    this.headers,
+    required this.headers,
     dynamic body,
   }) {
     this.method = method.toUpperCase();
@@ -109,18 +110,14 @@ class SigV4Request {
   }
 
   String _generateAuthorization(String datetime) {
-    canonicalRequest =
-        SigV4.buildCanonicalRequest(method, path, queryParams, headers, body);
+    canonicalRequest = SigV4.buildCanonicalRequest(method, path, queryParams, headers, body);
     hashedCanonicalRequest = SigV4.hashCanonicalRequest(canonicalRequest);
-    credentialScope = SigV4.buildCredentialScope(
-        datetime, awsSigV4Client.region, awsSigV4Client.serviceName);
-    stringToSign = SigV4.buildStringToSign(
-        datetime, credentialScope, hashedCanonicalRequest);
-    signingKey = SigV4.calculateSigningKey(awsSigV4Client.secretKey, datetime,
-        awsSigV4Client.region, awsSigV4Client.serviceName);
+    credentialScope = SigV4.buildCredentialScope(datetime, awsSigV4Client.region, awsSigV4Client.serviceName);
+    stringToSign = SigV4.buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
+    signingKey = SigV4.calculateSigningKey(
+        awsSigV4Client.secretKey, datetime, awsSigV4Client.region, awsSigV4Client.serviceName);
     signature = SigV4.calculateSignature(signingKey, stringToSign);
-    return SigV4.buildAuthorizationHeader(
-        awsSigV4Client.accessKey, credentialScope, headers, signature);
+    return SigV4.buildAuthorizationHeader(awsSigV4Client.accessKey, credentialScope!, headers, signature);
   }
 }
 
@@ -157,7 +154,7 @@ class SigV4 {
     return Uri.encodeFull(uri);
   }
 
-  static String buildCanonicalQueryString(Map<String, String> queryParams) {
+  static String buildCanonicalQueryString(Map<String, String>? queryParams) {
     if (queryParams == null) {
       return '';
     }
@@ -170,14 +167,13 @@ class SigV4 {
 
     final List<String> canonicalQueryStrings = [];
     sortedQueryParams.forEach((key) {
-      canonicalQueryStrings
-          .add('$key=${Uri.encodeComponent(queryParams[key])}');
+      canonicalQueryStrings.add('$key=${Uri.encodeComponent(queryParams[key]!)}');
     });
 
     return canonicalQueryStrings.join('&');
   }
 
-  static String buildCanonicalHeaders(Map<String, String> headers) {
+  static String buildCanonicalHeaders(Map<String, String?> headers) {
     final List<String> sortedKeys = [];
     headers.forEach((property, _) {
       sortedKeys.add(property);
@@ -193,7 +189,7 @@ class SigV4 {
     return canonicalHeaders;
   }
 
-  static String buildCanonicalSignedHeaders(Map<String, String> headers) {
+  static String buildCanonicalSignedHeaders(Map<String, String?> headers) {
     final List<String> sortedKeys = [];
     headers.forEach((property, _) {
       sortedKeys.add(property.toLowerCase());
@@ -203,23 +199,17 @@ class SigV4 {
     return sortedKeys.join(';');
   }
 
-  static String buildStringToSign(
-      String datetime, String credentialScope, String hashedCanonicalRequest) {
+  static String buildStringToSign(String datetime, String? credentialScope, String? hashedCanonicalRequest) {
     return '$_aws_sha_256\n$datetime\n$credentialScope\n$hashedCanonicalRequest';
   }
 
-  static String buildCredentialScope(
-      String datetime, String region, String service) {
+  static String buildCredentialScope(String datetime, String region, String service) {
     return '${datetime.substring(0, 8)}/$region/$service/$_aws4_request';
   }
 
   static String buildCanonicalRequest(
-      String method,
-      String path,
-      Map<String, String> queryParams,
-      Map<String, String> headers,
-      String payload) {
-    List<String> canonicalRequest = [
+      String? method, String path, Map<String, String>? queryParams, Map<String, String?> headers, String payload) {
+    List<String?> canonicalRequest = [
       method,
       buildCanonicalUri(path),
       buildCanonicalQueryString(queryParams),
@@ -230,8 +220,8 @@ class SigV4 {
     return canonicalRequest.join('\n');
   }
 
-  static String buildAuthorizationHeader(String accessKey,
-      String credentialScope, Map<String, String> headers, String signature) {
+  static String buildAuthorizationHeader(
+      String accessKey, String credentialScope, Map<String, String?> headers, String signature) {
     return _aws_sha_256 +
         ' Credential=' +
         accessKey +
@@ -243,15 +233,9 @@ class SigV4 {
         signature;
   }
 
-  static List<int> calculateSigningKey(
-      String secretKey, String datetime, String region, String service) {
+  static List<int> calculateSigningKey(String secretKey, String datetime, String region, String service) {
     return sign(
-        sign(
-            sign(
-                sign(utf8.encode('$_aws4$secretKey'), datetime.substring(0, 8)),
-                region),
-            service),
-        _aws4_request);
+        sign(sign(sign(utf8.encode('$_aws4$secretKey'), datetime.substring(0, 8)), region), service), _aws4_request);
   }
 
   static String calculateSignature(List<int> signingKey, String stringToSign) {

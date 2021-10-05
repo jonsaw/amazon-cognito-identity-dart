@@ -1,10 +1,10 @@
 import 'attribute_arg.dart';
 
 class AuthenticationDetails {
-  String username;
-  String password;
-  List<AttributeArg> validationData;
-  List<AttributeArg> authParameters;
+  String? username;
+  String? password;
+  List<AttributeArg>? validationData;
+  List<AttributeArg>? authParameters;
   AuthenticationDetails({
     this.username,
     this.password,
@@ -12,19 +12,19 @@ class AuthenticationDetails {
     this.authParameters,
   });
 
-  String getUsername() {
+  String? getUsername() {
     return this.username;
   }
 
-  String getPassword() {
+  String? getPassword() {
     return this.password;
   }
 
-  List<AttributeArg> getValidationData() {
+  List<AttributeArg>? getValidationData() {
     return this.validationData;
   }
 
-  List<AttributeArg> getAuthParameters() {
+  List<AttributeArg>? getAuthParameters() {
     return this.authParameters;
   }
 }

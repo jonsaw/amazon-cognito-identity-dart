@@ -5,18 +5,18 @@ import 'cognito_client_exceptions.dart';
 import 'cognito_identity_id.dart';
 
 class CognitoCredentials {
-  String _region;
-  String _userPoolId;
-  String _identityPoolId;
-  CognitoUserPool _pool;
-  Client _client;
+  String? _region;
+  String? _userPoolId;
+  String? _identityPoolId;
+  late CognitoUserPool _pool;
+  Client? _client;
   int _retryCount = 0;
-  String accessKeyId;
-  String secretAccessKey;
-  String sessionToken;
-  int expireTime;
+  String? accessKeyId;
+  String? secretAccessKey;
+  String? sessionToken;
+  int? expireTime;
   CognitoCredentials(String identityPoolId, CognitoUserPool pool,
-      {String region, String userPoolId}) {
+      {String? region, String? userPoolId}) {
     _pool = pool;
     _region = region ?? pool.getRegion();
     _userPoolId = userPoolId ?? pool.getUserPoolId();
@@ -27,7 +27,7 @@ class CognitoCredentials {
   /// Get AWS Credentials for authenticated user
   Future<void> getAwsCredentials(token) async {
     if (expireTime == null ||
-        new DateTime.now().millisecondsSinceEpoch > expireTime - 60000) {
+        new DateTime.now().millisecondsSinceEpoch > expireTime! - 60000) {
       final identityId = new CognitoIdentityId(_identityPoolId, _pool);
       final identityIdId = await identityId.getIdentityId(token);
 
@@ -42,7 +42,7 @@ class CognitoCredentials {
 
       var data;
       try {
-        data = await _client.request('GetCredentialsForIdentity', paramsReq,
+        data = await _client!.request('GetCredentialsForIdentity', paramsReq,
             service: 'AWSCognitoIdentityService',
             endpoint: 'https://cognito-identity.$_region.amazonaws.com/');
       } on CognitoClientException catch (e) {

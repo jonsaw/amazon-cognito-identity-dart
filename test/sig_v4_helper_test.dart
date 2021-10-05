@@ -168,7 +168,7 @@ void main() {
         method: 'POST',
         path: '/projects/123',
         datetime: '20180515T011950Z',
-        headers: new Map<String, String>.from(
+        headers: new Map<String, String?>.from(
             {'header-1': 'one', 'header-2': 'two'}),
         queryParams: new Map<String, String>.from({'color': 'orange red'}),
         body: new Map<String, dynamic>.from({'color': 'blue'}));

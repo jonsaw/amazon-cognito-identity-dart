@@ -1,6 +1,6 @@
 class CognitoRefreshToken {
-  String token;
-  CognitoRefreshToken([String refereshToken = '']) {
+  String? token;
+  CognitoRefreshToken([String? refereshToken = '']) {
     this.token = refereshToken;
   }
 

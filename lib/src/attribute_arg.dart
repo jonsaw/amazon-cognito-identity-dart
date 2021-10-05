@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 class AttributeArg {
-  final String name;
-  final String value;
+  final String? name;
+  final String? value;
 
   const AttributeArg({this.name, this.value});
 
@@ -12,7 +12,7 @@ class AttributeArg {
     return encoded.toString();
   }
 
-  Map<String, String> toJson() {
+  Map<String, String?> toJson() {
     return {
       'Name': name,
       'Value': value,

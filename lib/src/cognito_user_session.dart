@@ -5,16 +5,16 @@ import 'cognito_refresh_token.dart';
 
 class CognitoUserSession {
   CognitoIdToken idToken;
-  CognitoRefreshToken refreshToken;
+  CognitoRefreshToken? refreshToken;
   CognitoAccessToken accessToken;
-  int clockDrift;
+  int? clockDrift;
   bool _invalidated = false;
 
   CognitoUserSession(
     this.idToken,
     this.accessToken, {
     this.refreshToken,
-    int clockDrift,
+    int? clockDrift,
   }) {
     this.clockDrift =
         clockDrift == null ? this.calculateClockDrift() : clockDrift;
@@ -26,7 +26,7 @@ class CognitoUserSession {
   }
 
   /// Get the session's refresh token
-  CognitoRefreshToken getRefreshToken() {
+  CognitoRefreshToken? getRefreshToken() {
     return this.refreshToken;
   }
 
@@ -36,7 +36,7 @@ class CognitoUserSession {
   }
 
   /// Get the session's clock drift
-  int getClockDrift() {
+  int? getClockDrift() {
     return this.clockDrift;
   }
 
@@ -60,7 +60,7 @@ class CognitoUserSession {
       return false;
     }
     final now = (new DateTime.now().millisecondsSinceEpoch / 1000).floor();
-    final adjusted = now - clockDrift;
+    final adjusted = now - clockDrift!;
 
     return adjusted < accessToken.getExpiration() &&
         adjusted < idToken.getExpiration();

@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+
 import 'random_string_helper.dart';
 
 final String initN = 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1' +
@@ -20,27 +22,26 @@ final String initN = 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1' +
     'BBE117577A615D6C770988C0BAD946E208E24FA074E5AB31' +
     '43DB5BFCE0FD108E4B82D120A93AD2CAFFFFFFFFFFFFFFFF';
 
-final String _newPasswordRequiredChallengeUserAttributePrefix =
-    'userAttributes.';
+final String _newPasswordRequiredChallengeUserAttributePrefix = 'userAttributes.';
 
 class AuthenticationHelper {
-  String poolName;
-  BigInt N;
-  BigInt g;
-  BigInt k;
-  List<int> _infoBits;
-  BigInt _smallAValue;
-  BigInt _largeAValue;
-  String _uHexHash;
-  BigInt _uValue;
-  String _randomPassword;
-  String _saltToHashDevices;
-  String _verifierDevices;
+  String? poolName;
+  BigInt? N;
+  BigInt? g;
+  late BigInt k;
+  late List<int> _infoBits;
+  BigInt? _smallAValue;
+  BigInt? _largeAValue;
+  late String _uHexHash;
+  BigInt? _uValue;
+  String? _randomPassword;
+  String? _saltToHashDevices;
+  String? _verifierDevices;
   AuthenticationHelper(this.poolName) {
     this.N = BigInt.parse(initN, radix: 16);
     this.g = BigInt.parse('2', radix: 16);
     this.k = BigInt.parse(
-      this.hexHash('00${this.N.toRadixString(16)}0${this.g.toRadixString(16)}'),
+      this.hexHash('00${this.N!.toRadixString(16)}0${this.g!.toRadixString(16)}'),
       radix: 16,
     );
     this._smallAValue = this.generateRandomSmallA();
@@ -48,27 +49,27 @@ class AuthenticationHelper {
     this._infoBits = utf8.encode('Caldera Derived Key');
   }
 
-  BigInt getSmallAValue() {
+  BigInt? getSmallAValue() {
     return _smallAValue;
   }
 
-  BigInt getLargeAValue() {
+  BigInt? getLargeAValue() {
     if (_largeAValue != null) {
       return _largeAValue;
     }
-    _largeAValue = calculateA(_smallAValue);
+    _largeAValue = calculateA(_smallAValue!);
     return _largeAValue;
   }
 
-  String getRandomPassword() {
+  String? getRandomPassword() {
     return _randomPassword;
   }
 
-  String getSaltDevices() {
+  String? getSaltDevices() {
     return _saltToHashDevices;
   }
 
-  String getVerifierDevices() {
+  String? getVerifierDevices() {
     return _verifierDevices;
   }
 
@@ -78,25 +79,22 @@ class AuthenticationHelper {
   }
 
   /// Calculates the final hkdf based on computed S value, and computed U value and the key
-  List<int> getPasswordAuthenticationKey(
-      String username, String password, BigInt serverBValue, BigInt salt) {
-    if (serverBValue % N == BigInt.zero) {
+  List<int> getPasswordAuthenticationKey(String? username, String? password, BigInt serverBValue, BigInt salt) {
+    if (serverBValue % N! == BigInt.zero) {
       throw new ArgumentError('B cannot be zero.');
     }
-    _uValue = calculateU(_largeAValue, serverBValue);
+    _uValue = calculateU(_largeAValue!, serverBValue);
     if (_uValue == BigInt.zero) {
       throw new ArgumentError('U cannot be zero.');
     }
 
     final String usernamePassword = '${this.poolName}${username}:${password}';
     final String usernamePasswordHash = hash(utf8.encode(usernamePassword));
-    final xValue =
-        BigInt.parse(hexHash(padHex(salt) + usernamePasswordHash), radix: 16);
+    final xValue = BigInt.parse(hexHash(padHex(salt) + usernamePasswordHash), radix: 16);
 
     final sValue = calculateS(xValue, serverBValue);
 
-    List<int> hkdf =
-        computehkdf(hex.decode(padHex(sValue)), hex.decode(padHex(_uValue)));
+    List<int> hkdf = computehkdf(hex.decode(padHex(sValue)), hex.decode(padHex(_uValue!)));
 
     return hkdf;
   }
@@ -107,7 +105,7 @@ class AuthenticationHelper {
 
     final BigInt randomBigInt = BigInt.parse(hexRandom, radix: 16);
 
-    final smallABigInt = randomBigInt % N;
+    final smallABigInt = randomBigInt % N!;
 
     return smallABigInt;
   }
@@ -118,10 +116,9 @@ class AuthenticationHelper {
   }
 
   /// Generate salts and compute verifier.
-  void generateHashDevice(String deviceGroupKey, String username) {
+  void generateHashDevice(String? deviceGroupKey, String? username) {
     _randomPassword = this.generateRandomString();
-    final String combinedString =
-        '`$deviceGroupKey$username:${this._randomPassword}';
+    final String combinedString = '`$deviceGroupKey$username:${this._randomPassword}';
     final String hashedString = this.hash(utf8.encode(combinedString));
 
     final String hexRandom = new RandomString().generate(length: 16);
@@ -130,7 +127,7 @@ class AuthenticationHelper {
 
     final verifierDevicesNotPadded = modPow(
       this.g,
-      BigInt.parse(this.hexHash(_saltToHashDevices + hashedString), radix: 16),
+      BigInt.parse(this.hexHash(_saltToHashDevices! + hashedString), radix: 16),
       this.N,
     );
 
@@ -152,7 +149,7 @@ class AuthenticationHelper {
   /// with the generated random number a
   BigInt calculateA(BigInt a) {
     final A = modPow(this.g, a, N);
-    if ((A % this.N) == BigInt.zero) {
+    if ((A % this.N!) == BigInt.zero) {
       throw new Exception('Illegal paramater. A mod N cannot be 0.');
     }
     return A;
@@ -170,28 +167,28 @@ class AuthenticationHelper {
     final intValue2 = serverBValue - (this.k * gModPowXN);
     final result = modPow(
       intValue2,
-      _smallAValue + (_uValue * xValue),
+      _smallAValue! + (_uValue! * xValue),
       N,
     );
-    return result % N;
+    return result % N!;
   }
 
   /// Temporary workaround to BigInt.modPow's bug
   /// Based on https://github.com/dart-lang/googleapis_auth/blob/master/lib/src/crypto/rsa.dart
-  BigInt modPow(BigInt b, BigInt e, BigInt m) {
+  BigInt modPow(BigInt? b, BigInt e, BigInt? m) {
     if (e < BigInt.one) {
       return BigInt.one;
     }
-    if (b < BigInt.zero || b > m) {
-      b = b % m;
+    if (b! < BigInt.zero || b > m!) {
+      b = b % m!;
     }
     var r = BigInt.one;
     while (e > BigInt.zero) {
       if ((e & BigInt.one) > BigInt.zero) {
-        r = (r * b) % m;
+        r = (r * b!) % m;
       }
       e >>= 1;
-      b = (b * b) % m;
+      b = (b! * b) % m;
     }
     return r;
   }
@@ -200,8 +197,7 @@ class AuthenticationHelper {
   List<int> computehkdf(List<int> ikm, List<int> salt) {
     Hmac hmac1 = new Hmac(sha256, salt);
     Digest prk = hmac1.convert(ikm);
-    List<int> infoBitsUpdate = new List.from(_infoBits)
-      ..addAll(utf8.encode(String.fromCharCode(1)));
+    List<int> infoBitsUpdate = new List.from(_infoBits)..addAll(utf8.encode(String.fromCharCode(1)));
     Hmac hmac2 = new Hmac(sha256, prk.bytes);
     Digest dig = hmac2.convert(infoBitsUpdate);
     return dig.bytes.getRange(0, 16).toList();
